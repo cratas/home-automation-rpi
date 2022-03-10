@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
     'backend.apps.BackendConfig',
     'rest_framework',
     'frontend.apps.FrontendConfig'
@@ -83,6 +84,10 @@ DATABASES = {
     }
 }
 
+#periodically
+CRONJOBS = [
+    ('*/1 * * * *', 'backend.cron.get_network_data')
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
