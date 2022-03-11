@@ -1,18 +1,19 @@
 from itertools import permutations
 from django.shortcuts import render
 from django.http import HttpResponse
-from abc import ABC, abstractmethod
 import requests
 
-class Communication(ABC):
-    pass
 
-class PushCommunication:
-    pass
+from .helpers.communication import *
+
 
 # Create your views here.
 def main(request):
-    return HttpResponse("<h1>jarda<h1>")
+
+    communication = NetworkPullCommunication("https://pastebin.com/raw/YpAhDHBa")
+    data = communication.send_data_request()
+
+    return HttpResponse(data)
 
 
 
