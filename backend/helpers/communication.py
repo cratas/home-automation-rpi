@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pickle import NONE
 import requests
 
 #Parent class for keeping same type informations for all communication subclasses
@@ -27,7 +26,7 @@ class PushCommunication(Communication, ABC):
 
 #Derived class from PullCommunication abstract class for specific communication type(network)
 class NetworkPullCommunication(PullCommunication):
-
+    #function for sending get request for data
     def send_data_request(self):
         try:
             response = requests.get(self.source,timeout=3)
@@ -42,6 +41,9 @@ class NetworkPullCommunication(PullCommunication):
         except requests.exceptions.RequestException as err:
             return("OOps: Something Else",err)
 
+
+class NetworkPushCommunication(PushCommunication):
+    pass
 
 
 
