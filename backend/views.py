@@ -4,6 +4,7 @@ from django.http import HttpResponse
 
 import requests
 
+from .models import OneValueDevice, ValueObject
 
 from .helpers.communication import *
 from .helpers.cash import *
@@ -15,14 +16,12 @@ def main(request):
 
     # communication = NetworkPullCommunication("https://pastebin.com/raw/Az8Jr8GC")
     # data = communication.send_data_request()
-
-    CashMemory.add_device('tonda')
-    CashMemory.add_device('milan')
     
+    temp_sensor = OneValueDevice.objects.get(device_name="tempSensor")
+    ValueObject.objects.create(value_name="tempr", value="42", device=temp_sensor)
 
-    for item in CashMemory.devices: print(item)
 
-    return HttpResponse("sdf")
+    return HttpResponse("Works")
 
 
 
