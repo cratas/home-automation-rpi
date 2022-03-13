@@ -1,4 +1,5 @@
 from argparse import ONE_OR_MORE
+from tkinter import CASCADE
 from django.db import models
 import abc
 from .helpers.communication import *
@@ -8,38 +9,48 @@ from .helpers.parser import *
 #     name = models.CharField(max_length=4)
 
 
-class OneValueDevice(models.Model):
-    device_name = models.CharField(max_length=10)
 
-    def __str__(self):
-        return f"{self.device_name}"
+class TestingDevice(models.Model):
+    identifier = models.CharField(max_length=20, unique=True)
+
+class TestingValueObject(models.Model):
+    value_name = models.CharField(max_length=20)
+    value = models.CharField(max_length=20)
+    device = models.ForeignKey(TestingDevice, on_delete=models.CASCADE)
 
 
-    def add_measured_value(self):
-        communication = NetworkPullCommunication("https://pastebin.com/raw/Az8Jr8GC")
-        incoming_data = communication.send_data_request()
-        parser = ParserCSV(incoming_data)
-        parsed_values = {}
-        parsed_values = parser.get_parsed_data()
+# class OneValueDevice(models.Model):
+#     device_name = models.CharField(max_length=10)
 
-        #create new measuredValue object and add to current DeviceObject
-        temp_sensor = OneValueDevice.objects.get(device_name=self.device_name)
+#     def __str__(self):
+#         return f"{self.device_name}"
 
-        for k, v in temp_sensor.items():
-            ValueObject.objects.create(value_name=parsed_values[k], value=v, device=temp_sensor)
+
+#     def add_measured_value(self):
+#         communication = NetworkPullCommunication("https://pastebin.com/raw/Az8Jr8GC")
+#         incoming_data = communication.send_data_request()
+#         parser = ParserCSV(incoming_data)
+#         parsed_values = {}
+#         parsed_values = parser.get_parsed_data()
+
+#         #create new measuredValue object and add to current DeviceObject
+#         temp_sensor = OneValueDevice.objects.get(device_name=self.device_name)
+
+#         for k, v in temp_sensor.items():
+#             ValueObject.objects.create(value_name=parsed_values[k], value=v, device=temp_sensor)
 
 
 
         
 
 
-class ValueObject(models.Model):
-    value_name = models.CharField(max_length=10)
-    value = models.CharField(max_length=20)
-    device = models.ForeignKey(OneValueDevice, on_delete=models.CASCADE)
+# class ValueObject(models.Model):
+#     value_name = models.CharField(max_length=10)
+#     value = models.CharField(max_length=20)
+#     device = models.ForeignKey(OneValueDevice, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.value_name} : {self.value}"
+#     def __str__(self):
+#         return f"{self.value_name} : {self.value}"
 
 # #Room model with his name and N sensors inside
 # class Room(models.Model):

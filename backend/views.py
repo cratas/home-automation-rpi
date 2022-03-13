@@ -1,27 +1,36 @@
-from itertools import permutations
-from django.shortcuts import render
 from django.http import HttpResponse
+from django.views import View
 
 import requests
 
-from .models import OneValueDevice, ValueObject
+# from .models import OneValueDevice, ValueObject
 
 from .helpers.communication import *
 from .helpers.cash import *
+from rest_framework import generics
+
 
 
 
 # Create your views here.
 def main(request):
 
-    # communication = NetworkPullCommunication("https://pastebin.com/raw/Az8Jr8GC")
-    # data = communication.send_data_request()
-    
-    temp_sensor = OneValueDevice.objects.get(device_name="tempSensor")
-    ValueObject.objects.create(value_name="tempr", value="42", device=temp_sensor)
-
-
     return HttpResponse("Works")
 
+
+
+class NetworkCommunication(generics.ListAPIView):
+
+    def get(self, request):
+        params = request.META['QUERY_STRING']
+
+        if params is not None:
+            return HttpResponse(params)
+        return HttpResponse("BAD")
+
+    def post(self, request):
+        data = request.body.decode('utf-8')
+
+        return HttpResponse(data)
 
 
