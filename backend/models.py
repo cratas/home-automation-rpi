@@ -13,12 +13,16 @@ from .helpers.parser import *
 class TestingDevice(models.Model):
     identifier = models.CharField(max_length=20, unique=True)
 
+    def __str__(self):
+        return f'{self.identifier}'
+
 class TestingValueObject(models.Model):
     value_name = models.CharField(max_length=20)
     value = models.CharField(max_length=20)
     device = models.ForeignKey(TestingDevice, on_delete=models.CASCADE)
 
-
+    def __str__(self):
+        return f'{self.value_name}: {self.value}'
 # class OneValueDevice(models.Model):
 #     device_name = models.CharField(max_length=10)
 
