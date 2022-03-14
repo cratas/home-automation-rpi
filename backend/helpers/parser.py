@@ -1,10 +1,11 @@
 
 
-#class for parsing csv file
-class ParserCSV:
 
-    def __init__(self, source):
-        self.source = source
+# #class for parsing csv file
+# class ParserCSV:
 
-    def get_parsed_data(self):
-        pass
+#     def __init__(self, source):
+#         self.source = source
+
+#     def get_parsed_data(self):
+#         pass

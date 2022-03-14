@@ -22,14 +22,14 @@ class Device(models.Model):
 # DEVICE VALUES LIST MODEL
 # ----------
 class DeviceValuesList(models.Model):
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    device = models.ForeignKey('backend.Device', on_delete=models.CASCADE)
 
 # ----------
 # VALUE OBJECT MODEL
 # ----------
 class BaseValueObject(PolymorphicModel):
     value_title = models.CharField(max_length=30)
-    device_values = models.ForeignKey(DeviceValuesList, on_delete=models.CASCADE)
+    device_values = models.ForeignKey('backend.DeviceValuesList', on_delete=models.CASCADE)
 
 
 class StringValueObject(BaseValueObject):
