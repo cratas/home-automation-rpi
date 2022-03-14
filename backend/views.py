@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.views import View
 
-from .models import TestingDevice, TestingValueObject
+from .models import Room, Device, DeviceValuesList, BaseValueObject, StringValueObject, NumericValueObject, BooleanValueObject
 
 # from .models import OneValueDevice, ValueObject
 
@@ -20,12 +20,17 @@ class NetworkCommunication(View):
             return False
 
         if retrieved_data is not None:
+            device = Device.objects.get(identifier=device_id)
+            values_list = DeviceValuesList.objects.create(device=device)
+
             for key, value in retrieved_data.items():
                 if key == 'id':
                     continue
 
-                device = TestingDevice.objects.get(identifier=device_id)
-                TestingValueObject.objects.create(value_name=key, value=value, device=device)
+
+                if type(value) == str:
+                    StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+
 
                 print(f'{key} : {value}')
 
