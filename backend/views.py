@@ -5,7 +5,6 @@ from django.views import View
 from abc import ABC, abstractmethod
 import csv
 
-
 from .helpers import *
 from .models import *
 
