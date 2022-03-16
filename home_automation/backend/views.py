@@ -2,7 +2,8 @@ from django.http import HttpResponse
 from django.views import View
 from abc import ABC, abstractmethod
 import csv
- 
+from django.views.generic import DetailView
+
 from .models import *
  
  
@@ -91,12 +92,29 @@ class CSVParser(Parser):
         self.data = [dict(zip(headers,i)) for i in file_data]
 
 
+# --------------
+# SINGLETON Class for creating specific type of parser
+# --------------
 class ParserFactory:
+    __instance = None
+
+    @staticmethod
+    def get_instance():
+        if ParserFactory.__instance == None:
+            ParserFactory()
+        return ParserFactory.__instance
+
+    def __init__(self):
+        if ParserFactory.__instance != None:
+            raise Exception("This class is singleton!")
+        else:
+            ParserFactory.__instance = self
+
     def create_parser(self, type, data, delimiter=','):
-        if type == 'CSV':
+        if type == 'csv':
             parser = CSVParser(data, delimiter)
             return parser
-        elif type == 'PARAMETRES':
+        elif type == 'parametres':
             parser = ParametresParser(data)
             return parser
         else:
@@ -105,12 +123,20 @@ class ParserFactory:
 # --------------
 # COMMUNICATION CLASSES
 # --------------
-class NetworkCommunication(View):
+# class PushCommunication():
+#     def __init__(self):
+#         self.parser_type=None
 
-    def __init__(self, parser_type):
-        self.parser_type = parser_type
- 
-    def get(self, request):
+class NetworkCommunication(DetailView):
+    slug = None
+
+    def get_object(self, queryset=None):
+        return queryset.get(slug=self.slug)
+
+
+    def get(self, request, *args, **kwargs):
+        self.parser_type = kwargs['name']
+
         retrieved_data = request.GET
  
         if not retrieved_data:
@@ -123,17 +149,22 @@ class NetworkCommunication(View):
         else:
             return HttpResponse("Data NOT inserted into database")
  
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        self.parser_type = kwargs['name']
         retrieved_data = request.body.decode('utf-8')
  
         if not retrieved_data:
             return HttpResponse("Data NOT inserted into database")
  
-        parser = ParserFactory(self.parser_type, retrieved_data, ',')
-
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, retrieved_data, ',')
+        
         parser.parse_into_dict()
  
         if parser.process_data() is True:
             return HttpResponse("Data inserted into database")
         else:
             return HttpResponse("Data NOT inserted into database")
+
+
+class SerialBusCommunication():
+    pass

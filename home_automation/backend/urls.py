@@ -3,8 +3,7 @@ from .views import main, NetworkCommunication
 
 urlpatterns = [
     path('home/', main),
-    path('about/', NetworkCommunication.as_view()),
-    path('push/csv/', NetworkCommunication.as_view('CSV')),
-    path('push/parametres/', NetworkCommunication.as_view('PARAMETRES')),
-
+    # path('push/csv/', NetworkCommunication.as_view('CSV')),
+    # path('push/parametres/', NetworkCommunication.as_view(slug='PARAMETRES')),
+    path("push/<name>/", NetworkCommunication.as_view(), name="name"),
 ]
