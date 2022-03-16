@@ -10,7 +10,6 @@ from .models import *
 def main(request):
     return HttpResponse("Works")
  
- 
 # --------------
 # PARSER CLASSES
 # --------------
@@ -90,11 +89,26 @@ class CSVParser(Parser):
         headers=next(file_data)
         #creating dict from csv file
         self.data = [dict(zip(headers,i)) for i in file_data]
- 
+
+
+class ParserFactory:
+    def create_parser(self, type, data, delimiter=','):
+        if type == 'CSV':
+            parser = CSVParser(data, delimiter)
+            return parser
+        elif type == 'PARAMETRES':
+            parser = ParametresParser(data)
+            return parser
+        else:
+            raise Exception("Unknown type of data format")
+
 # --------------
 # COMMUNICATION CLASSES
 # --------------
 class NetworkCommunication(View):
+
+    def __init__(self, parser_type):
+        self.parser_type = parser_type
  
     def get(self, request):
         retrieved_data = request.GET
@@ -102,8 +116,8 @@ class NetworkCommunication(View):
         if not retrieved_data:
             return HttpResponse("Data NOT inserted into database")
  
-        parser = ParametresParser(retrieved_data)
- 
+        parser = ParserFactory(self.parser_type, retrieved_data, ',')
+
         if parser.process_data() is True:
             return HttpResponse("Data inserted into database")
         else:
@@ -115,12 +129,9 @@ class NetworkCommunication(View):
         if not retrieved_data:
             return HttpResponse("Data NOT inserted into database")
  
-        # parser = ParametresParser(retrieved_data)
- 
-        parser = CSVParser(retrieved_data, ',')
+        parser = ParserFactory(self.parser_type, retrieved_data, ',')
+
         parser.parse_into_dict()
- 
-        print(Device.objects.all())
  
         if parser.process_data() is True:
             return HttpResponse("Data inserted into database")

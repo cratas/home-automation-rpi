@@ -17,11 +17,18 @@ class Device(PolymorphicModel):
         return f'{self.identifier}'
 
 class PushDevice(Device):
-    pass
+
+    def __str__(self):
+        return f'Push device:{self.identifier}'
 
 class PullDevice(Device):
-    pass
+    source_address = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return f'Pull device:{self.identifier}'
 
+    def get_new_data(self):
+        pass
 # ----------
 # DEVICE VALUES LIST MODEL
 # ----------
