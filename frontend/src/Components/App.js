@@ -1,7 +1,7 @@
-import MainContent from "./MainContent.js";
+import React from "react";
 
 const App = () => {
-    return <MainContent />
+    return <h1>asdfasdf</h1>
 }
 
 export default App;
