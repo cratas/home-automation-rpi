@@ -1,9 +1,8 @@
 from django.urls import path
-from .views import main, NetworkCommunication
+from .views import main, NetworkPushCommunication
 
 urlpatterns = [
     path('home/', main),
-    # path('push/csv/', NetworkCommunication.as_view('CSV')),
-    # path('push/parametres/', NetworkCommunication.as_view(slug='PARAMETRES')),
-    path("push/<name>/", NetworkCommunication.as_view(), name="name"),
+    path("push/", NetworkPushCommunication.as_view()),
+    path("push/<name>/", NetworkPushCommunication.as_view(), name="name"),
 ]

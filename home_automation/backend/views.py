@@ -3,9 +3,9 @@ from django.views import View
 from abc import ABC, abstractmethod
 import csv
 from django.views.generic import DetailView
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import *
- 
  
 # Create your views here.
 def main(request):
@@ -35,15 +35,14 @@ class Parser(ABC):
         if data is None:
             data = self.data
  
-        if data is None:
+        if data is None or data["id"] is None:
             return False
- 
-        if data["id"] is None:
+        
+        try:
+            device = PushDevice.objects.get(identifier=data["id"])
+        except ObjectDoesNotExist:
             return False
-        else:
-            device_id = data["id"]
- 
-        device = PushDevice.objects.get(identifier=device_id)
+
         values_list = DeviceValuesList.objects.create(device=device)
  
         for key, value in data.items():
@@ -60,12 +59,10 @@ class Parser(ABC):
  
         return True
  
- 
- 
 class ParametresParser(Parser):
     def parse_into_dict(self):
         self.data = dict(x.split("=") for x in self.data.split("&"))
- 
+        print(self.data)
  
 class CSVParser(Parser):
  
@@ -80,7 +77,6 @@ class CSVParser(Parser):
  
         return True
  
- 
     def parse_into_dict(self):
         #parsing csv file via csv library into dict
         data_lines = self.data.splitlines()
@@ -90,7 +86,6 @@ class CSVParser(Parser):
         headers=next(file_data)
         #creating dict from csv file
         self.data = [dict(zip(headers,i)) for i in file_data]
-
 
 # --------------
 # SINGLETON Class for creating specific type of parser
@@ -123,26 +118,20 @@ class ParserFactory:
 # --------------
 # COMMUNICATION CLASSES
 # --------------
-# class PushCommunication():
-#     def __init__(self):
-#         self.parser_type=None
+class PushCommunication():
+    def __init__(self):
+        self.parser_type='parametres'
 
-class NetworkCommunication(DetailView):
-    slug = None
-
-    def get_object(self, queryset=None):
-        return queryset.get(slug=self.slug)
-
-
-    def get(self, request, *args, **kwargs):
-        self.parser_type = kwargs['name']
-
+class NetworkPushCommunication(PushCommunication, DetailView):
+    def get(self, request):
         retrieved_data = request.GET
+        print(retrieved_data)
  
         if not retrieved_data:
             return HttpResponse("Data NOT inserted into database")
  
-        parser = ParserFactory(self.parser_type, retrieved_data, ',')
+        #retrieved data are already represented as dic
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, retrieved_data, ',')
 
         if parser.process_data() is True:
             return HttpResponse("Data inserted into database")
@@ -157,7 +146,6 @@ class NetworkCommunication(DetailView):
             return HttpResponse("Data NOT inserted into database")
  
         parser = ParserFactory.get_instance().create_parser(self.parser_type, retrieved_data, ',')
-        
         parser.parse_into_dict()
  
         if parser.process_data() is True:
@@ -166,5 +154,13 @@ class NetworkCommunication(DetailView):
             return HttpResponse("Data NOT inserted into database")
 
 
-class SerialBusCommunication():
-    pass
+class SerialBusPushCommunication(PushCommunication):
+
+    def __init__(self, trans_speed, trans_size, stop_bit):
+        self.parser_type='csv'
+        self.trans_speed = trans_speed
+        self.trans_size = trans_size
+        self.stop_bit = stop_bit
+
+    def receive_data(self):
+        pass

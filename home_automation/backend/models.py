@@ -1,5 +1,10 @@
+from random import choices
 from django.db import models
 from polymorphic.models import PolymorphicModel
+
+
+
+
 
 # ----------
 # ROOM MODEL
@@ -12,24 +17,30 @@ class Room(models.Model):
 # ----------
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
+    device_name = models.CharField(max_length=20, null=True)
 
     def __str__(self):
         return f'{self.identifier}'
 
-class PushDevice(Device):
 
+class PushDevice(Device):
     def __str__(self):
         return f'Push device:{self.identifier}'
 
 class PullDevice(Device):
-    source_address = models.CharField(max_length=50, unique=True)
-    
+    source_address = models.CharField(max_length=50, unique=True, null=True)
+    class FORMATS(models.TextChoices):
+        CSV = 'csv'
+        PARAMETRES = 'parametres'
+    format = models.CharField(max_length=20, choices=FORMATS.choices, null=True)
+
     def __str__(self):
         return f'Pull device:{self.identifier}'
 
     def get_new_data(self):
+    #TODO - create communication class
         pass
-# ----------
+# ----------    
 # DEVICE VALUES LIST MODEL
 # ----------
 class DeviceValuesList(models.Model):
