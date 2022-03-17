@@ -1,10 +1,8 @@
+from email.policy import default
 from random import choices
 from django.db import models
 from polymorphic.models import PolymorphicModel
-
-
-
-
+from .helpers.parser import *
 
 # ----------
 # ROOM MODEL
@@ -29,17 +27,22 @@ class PushDevice(Device):
 
 class PullDevice(Device):
     source_address = models.CharField(max_length=50, unique=True, null=True)
+    class CHANNELS(models.TextChoices):
+        NETWORK = 'network'
+        SERIALBUS = 'serial_bus'
+    source_type = models.CharField(max_length=20, choices=CHANNELS.choices, default=CHANNELS.NETWORK)
+
+
     class FORMATS(models.TextChoices):
         CSV = 'csv'
         PARAMETRES = 'parametres'
     format = models.CharField(max_length=20, choices=FORMATS.choices, null=True)
 
     def __str__(self):
-        return f'Pull device:{self.identifier}, {self.source_address}, {self.format}'
+        return f'Pull device:{self.identifier}, {self.source_address}, {self.format}, {self.source_type}'
 
-    def get_new_data(self):
-    #TODO - create communication class
-        pass
+
+ 
 # ----------    
 # DEVICE VALUES LIST MODEL
 # ----------

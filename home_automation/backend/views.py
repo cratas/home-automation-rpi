@@ -1,135 +1,90 @@
+import http
 from django.http import HttpResponse
 from django.views import View
-from abc import ABC, abstractmethod
-import csv
-from django.views.generic import DetailView
 from django.core.exceptions import ObjectDoesNotExist
 import requests
-from django.http import QueryDict
 
+from .helpers.parser import *
+from .helpers.managers import DeviceManager
 from .models import *
- 
-# Create your views here.
-def main(request):
-    return HttpResponse("Works")
 
 
+def testing_function(request):
+
+    # communication = NetworkPullCommunication()
+    # communication.process_data()
+    print(DeviceManager.get_instance().get_pull_netowrk_devices())
+
+    return HttpResponse("sdfsdf")
 
 # --------------
-# PARSER CLASSES
+# PULL COMMUNICATION CLASSES
 # --------------
-class Parser(ABC):
-    def __init__(self, data):
-        self.data = data
- 
+class PullCommunication(ABC):
+    
     @abstractmethod
-    def parse_into_dict(self):
+    def get_data(self):
         pass
 
- 
-class ParametresParser(Parser):
-    def parse_into_dict(self):
-        if isinstance(self.data, QueryDict):
-            self.data = [ self.data.dict() ]
-        else:
-            self.data = [ dict(x.split("=") for x in self.data.split("&")) ]
- 
-class CSVParser(Parser):
- 
-    def __init__(self, data, delimiter):
-        Parser.__init__(self, data)
-        self.delimiter = delimiter
- 
+    @abstractmethod
     def process_data(self):
-        for incoming_values in self.data:
-            if super().process_data(incoming_values) is False:
-                return False
- 
-        return True
- 
-    def parse_into_dict(self):
-        #parsing csv file via csv library into dict
-        data_lines = self.data.splitlines()
-        file_data=csv.reader(data_lines, delimiter=self.delimiter)
- 
-        #getting csv headers
-        headers=next(file_data)
-        #creating dict from csv file
-        self.data = [dict(zip(headers,i)) for i in file_data]
+        pass
 
-# --------------
-# SINGLETON Class for creating specific type of parser
-# --------------
-class ParserFactory:
-    __instance = None
+class NetworkPullCommunication(PullCommunication):
+    
+    def get_data(self, source_address):
+        try:
+            response = requests.get(source_address,timeout=3)
+            response.raise_for_status()
 
-    @staticmethod
-    def get_instance():
-        if ParserFactory.__instance == None:
-            ParserFactory()
-        return ParserFactory.__instance
+            return response.text
+        except:
+            return None
 
-    def __init__(self):
-        if ParserFactory.__instance != None:
-            raise Exception("This class is singleton!")
-        else:
-            ParserFactory.__instance = self
+    def process_data(self):
 
-    def create_parser(self, type, data, delimiter=','):
-        if type == 'csv':
-            parser = CSVParser(data, delimiter)
-            return parser
-        elif type == 'parametres':
-            parser = ParametresParser(data)
-            return parser
-        else:
-            raise Exception("Unknown type of data format")
+        for device in DeviceManager.get_instance().get_pull_devices():
+            retrieved_data = self.get_data(device.source_address)
 
+            if retrieved_data is None:
+                print(f'Cannot retreive {device.device_name}:{device.identifier} data from {self.source_address}')
+                continue
 
-def get_data(source_address):
-    try:
-        response = requests.get(source_address,timeout=3)
-        response.raise_for_status()
-        return response.text
-    except requests.exceptions.HTTPError as errh:
-        return("Http Error:",errh)
-    except requests.exceptions.ConnectionError as errc:
-        return("Error Connecting:",errc)
-    except requests.exceptions.Timeout as errt:
-        return("Timeout Error:",errt)
-    except requests.exceptions.RequestException as err:
-        return("OOps: Something Else", err)
+            parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, ',')
+            parser.parse_into_dict()
 
-def testing_function(rquest):
+             #iterate over all dicts in dict list
+            for dict_object in parser.data:
+                values_list = DeviceValuesList.objects.create(device=device)
 
-    for device in PullDevice.objects.all():
-
-        retrieved_data = get_data(device.source_address)
+                #iterate over every dict inside list
+                for key, value in dict_object.items():
+                    #convert to correct float format
+                    if "," in value:
+                        value = value.replace(',','.')
         
-        parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, ',')
-        parser.parse_into_dict()
-        parser.process_data()
-        
-        print(parser.data)
+                    #creating correct type of value
+                    if is_number(value):
+                        NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                    else:
+                        StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
 
-    return HttpResponse("OK")
+
+class SerialBusPullCommunication(PullCommunication):
+    
+    def get_data():
+        pass
+
+    def process_data(self):
+        pass
 
 # --------------
-# COMMUNICATION CLASSES
+# PUSH COMMUNICATION CLASSES
 # --------------
 class PushCommunication():
     def __init__(self):
         self.parser_type='parametres'
         self.retreived_data = None
-
-    def is_number(self, sample_str):
-        result = True
-        try:
-            float(sample_str)
-        except:
-            result = False
-        return result
-
 
     def process_data(self):
 
@@ -157,7 +112,7 @@ class PushCommunication():
                     value = value.replace(',','.')
     
                 #creating correct type of value
-                if self.is_number(value):
+                if is_number(value):
                     NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
                 else:
                     StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
@@ -220,5 +175,5 @@ class SerialBusPushCommunication(PushCommunication):
         self.trans_size = trans_size
         self.stop_bit = stop_bit
 
-    def receive_data(self):
+    def get_data(self):
         pass
