@@ -35,7 +35,7 @@ class PullDevice(Device):
     format = models.CharField(max_length=20, choices=FORMATS.choices, null=True)
 
     def __str__(self):
-        return f'Pull device:{self.identifier}'
+        return f'Pull device:{self.identifier}, {self.source_address}, {self.format}'
 
     def get_new_data(self):
     #TODO - create communication class

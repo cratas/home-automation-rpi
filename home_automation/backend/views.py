@@ -4,13 +4,17 @@ from abc import ABC, abstractmethod
 import csv
 from django.views.generic import DetailView
 from django.core.exceptions import ObjectDoesNotExist
+import requests
+from django.http import QueryDict
 
 from .models import *
  
 # Create your views here.
 def main(request):
     return HttpResponse("Works")
- 
+
+
+
 # --------------
 # PARSER CLASSES
 # --------------
@@ -29,40 +33,14 @@ class Parser(ABC):
         except:
             result = False
         return result
- 
-    def process_data(self, data=None):
-        pass
-        if data is None:
-            data = self.data
- 
-        if data is None or data["id"] is None:
-            return False
-        
-        try:
-            device = PushDevice.objects.get(identifier=data["id"])
-        except ObjectDoesNotExist:
-            return False
 
-        values_list = DeviceValuesList.objects.create(device=device)
- 
-        for key, value in data.items():
-            if key == 'id':
-                continue
- 
-            if "," in value:
-                value = value.replace(',','.')
- 
-            if self.is_number(value):
-                NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
-            else:
-                StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
- 
-        return True
  
 class ParametresParser(Parser):
     def parse_into_dict(self):
-        self.data = dict(x.split("=") for x in self.data.split("&"))
-        print(self.data)
+        if isinstance(self.data, QueryDict):
+            self.data = [ self.data.dict() ]
+        else:
+            self.data = [ dict(x.split("=") for x in self.data.split("&")) ]
  
 class CSVParser(Parser):
  
@@ -115,43 +93,126 @@ class ParserFactory:
         else:
             raise Exception("Unknown type of data format")
 
+
+
+
+def get_data(source_address):
+    try:
+            response = requests.get(source_address,timeout=3)
+            response.raise_for_status()
+            return response.text
+    except requests.exceptions.HTTPError as errh:
+        return("Http Error:",errh)
+    except requests.exceptions.ConnectionError as errc:
+        return("Error Connecting:",errc)
+    except requests.exceptions.Timeout as errt:
+        return("Timeout Error:",errt)
+    except requests.exceptions.RequestException as err:
+        return("OOps: Something Else", err)
+
+def testing_function(rquest):
+
+    for device in PullDevice.objects.all():
+
+        retrieved_data = get_data(device.source_address)
+        
+        parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, ',')
+        parser.parse_into_dict()
+        parser.process_data()
+        
+        print(parser.data)
+
+    return HttpResponse("OK")
+
+
+
+
+
+
 # --------------
 # COMMUNICATION CLASSES
 # --------------
 class PushCommunication():
     def __init__(self):
         self.parser_type='parametres'
+        self.retreived_data = None
 
-class NetworkPushCommunication(PushCommunication, DetailView):
-    def get(self, request):
-        retrieved_data = request.GET
-        print(retrieved_data)
+    def process_data(self, data=None):
+        if data is None:
+            data = self.data
  
-        if not retrieved_data:
+        if data is None or data["id"] is None:
+            return False
+        
+        try:
+            device = PushDevice.objects.get(identifier=data["id"])
+        except ObjectDoesNotExist:
+            return False
+
+        values_list = DeviceValuesList.objects.create(device=device)
+ 
+        for key, value in data.items():
+            if key == 'id':
+                continue
+ 
+            if "," in value:
+                value = value.replace(',','.')
+ 
+            if self.is_number(value):
+                NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+            else:
+                StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+ 
+        return True
+
+class NetworkPushCommunication(PushCommunication, View):
+    def get(self, request):
+        #getting data via get request
+        incoming_data = request.GET
+
+        #checking if incoming data aren't null
+        if not incoming_data:
             return HttpResponse("Data NOT inserted into database")
  
         #retrieved data are already represented as dic
-        parser = ParserFactory.get_instance().create_parser(self.parser_type, retrieved_data, ',')
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, ',')
+        parser.parse_into_dict()
 
-        if parser.process_data() is True:
-            return HttpResponse("Data inserted into database")
-        else:
-            return HttpResponse("Data NOT inserted into database")
+        self.retreived_data = parser.data
+        print(self.retreived_data)
+
+        # #process data
+        # if self.process_data() is True:
+        #     return HttpResponse("Data inserted into database")
+        # else:
+        #     return HttpResponse("Data NOT inserted into database")
+
+        return HttpResponse("Data NOT inserted into database")
  
     def post(self, request, *args, **kwargs):
+        #specific format of incoming data
         self.parser_type = kwargs['name']
-        retrieved_data = request.body.decode('utf-8')
+        #getting data via post request
+        incoming_data = request.body.decode('utf-8')
  
-        if not retrieved_data:
+        #checking if incoming data aren't null
+        if not incoming_data:
             return HttpResponse("Data NOT inserted into database")
  
-        parser = ParserFactory.get_instance().create_parser(self.parser_type, retrieved_data, ',')
+        #parsing retrieved data via parser
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, ',')
         parser.parse_into_dict()
  
-        if parser.process_data() is True:
-            return HttpResponse("Data inserted into database")
-        else:
-            return HttpResponse("Data NOT inserted into database")
+        self.retreived_data = parser.data
+        print(self.retreived_data)
+
+        # #process data
+        # if self.process_data() is True:
+        #     return HttpResponse("Data inserted into database")
+        # else:
+        #     return HttpResponse("Data NOT inserted into database")
+
+        return HttpResponse("Data NOT inserted into database")
 
 
 class SerialBusPushCommunication(PushCommunication):
