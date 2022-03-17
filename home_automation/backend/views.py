@@ -25,14 +25,6 @@ class Parser(ABC):
     @abstractmethod
     def parse_into_dict(self):
         pass
- 
-    def is_number(self, sample_str):
-        result = True
-        try:
-            float(sample_str)
-        except:
-            result = False
-        return result
 
  
 class ParametresParser(Parser):
@@ -94,13 +86,11 @@ class ParserFactory:
             raise Exception("Unknown type of data format")
 
 
-
-
 def get_data(source_address):
     try:
-            response = requests.get(source_address,timeout=3)
-            response.raise_for_status()
-            return response.text
+        response = requests.get(source_address,timeout=3)
+        response.raise_for_status()
+        return response.text
     except requests.exceptions.HTTPError as errh:
         return("Http Error:",errh)
     except requests.exceptions.ConnectionError as errc:
@@ -124,11 +114,6 @@ def testing_function(rquest):
 
     return HttpResponse("OK")
 
-
-
-
-
-
 # --------------
 # COMMUNICATION CLASSES
 # --------------
@@ -137,31 +122,45 @@ class PushCommunication():
         self.parser_type='parametres'
         self.retreived_data = None
 
-    def process_data(self, data=None):
-        if data is None:
-            data = self.data
- 
-        if data is None or data["id"] is None:
-            return False
-        
+    def is_number(self, sample_str):
+        result = True
         try:
-            device = PushDevice.objects.get(identifier=data["id"])
+            float(sample_str)
+        except:
+            result = False
+        return result
+
+
+    def process_data(self):
+
+        #getting device id from incoming data
+        device_identifier = self.retreived_data[0]["id"]
+
+        #if device with incoming id does not exist, method will return False
+        try:
+            device = PushDevice.objects.get(identifier=device_identifier)
         except ObjectDoesNotExist:
             return False
 
-        values_list = DeviceValuesList.objects.create(device=device)
- 
-        for key, value in data.items():
-            if key == 'id':
-                continue
- 
-            if "," in value:
-                value = value.replace(',','.')
- 
-            if self.is_number(value):
-                NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
-            else:
-                StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+        #iterate over all dicts in dict list
+        for dict_object in self.retreived_data:
+            values_list = DeviceValuesList.objects.create(device=device)
+
+            #iterate over every dict inside list
+            for key, value in dict_object.items():
+                #ignore values with key id
+                if key == 'id':
+                    continue
+
+                #convert to correct float format
+                if "," in value:
+                    value = value.replace(',','.')
+    
+                #creating correct type of value
+                if self.is_number(value):
+                    NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                else:
+                    StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
  
         return True
 
@@ -179,13 +178,12 @@ class NetworkPushCommunication(PushCommunication, View):
         parser.parse_into_dict()
 
         self.retreived_data = parser.data
-        print(self.retreived_data)
 
-        # #process data
-        # if self.process_data() is True:
-        #     return HttpResponse("Data inserted into database")
-        # else:
-        #     return HttpResponse("Data NOT inserted into database")
+        #process data
+        if self.process_data() is True:
+            return HttpResponse("Data inserted into database")
+        else:
+            return HttpResponse("Data NOT inserted into database")
 
         return HttpResponse("Data NOT inserted into database")
  
@@ -204,13 +202,12 @@ class NetworkPushCommunication(PushCommunication, View):
         parser.parse_into_dict()
  
         self.retreived_data = parser.data
-        print(self.retreived_data)
 
-        # #process data
-        # if self.process_data() is True:
-        #     return HttpResponse("Data inserted into database")
-        # else:
-        #     return HttpResponse("Data NOT inserted into database")
+        #process data
+        if self.process_data() is True:
+            return HttpResponse("Data inserted into database")
+        else:
+            return HttpResponse("Data NOT inserted into database")
 
         return HttpResponse("Data NOT inserted into database")
 
