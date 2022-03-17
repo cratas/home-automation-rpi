@@ -1,6 +1,6 @@
-import csv
-from django.http import QueryDict
 from abc import ABC, abstractmethod
+from django.http import QueryDict
+import csv
 
 # --------------
 # PARSER CLASSES

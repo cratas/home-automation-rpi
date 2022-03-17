@@ -1,19 +1,19 @@
-import http
+from django.core.exceptions import ObjectDoesNotExist
+from abc import abstractstaticmethod
 from django.http import HttpResponse
 from django.views import View
-from django.core.exceptions import ObjectDoesNotExist
 import requests
 
 from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
-
 def testing_function(request):
 
     # communication = NetworkPullCommunication()
     # communication.process_data()
-    print(DeviceManager.get_instance().get_pull_netowrk_devices())
+    # print(DeviceManager.get_instance().get_pull_netowrk_devices())
+    # NetworkPullCommunication.process_data()
 
     return HttpResponse("sdfsdf")
 
@@ -22,17 +22,17 @@ def testing_function(request):
 # --------------
 class PullCommunication(ABC):
     
-    @abstractmethod
-    def get_data(self):
+    @abstractstaticmethod
+    def get_data():
         pass
 
-    @abstractmethod
-    def process_data(self):
+    @abstractstaticmethod
+    def process_data():
         pass
 
 class NetworkPullCommunication(PullCommunication):
     
-    def get_data(self, source_address):
+    def get_data(source_address):
         try:
             response = requests.get(source_address,timeout=3)
             response.raise_for_status()
@@ -41,13 +41,13 @@ class NetworkPullCommunication(PullCommunication):
         except:
             return None
 
-    def process_data(self):
+    def process_data():
 
         for device in DeviceManager.get_instance().get_pull_devices():
-            retrieved_data = self.get_data(device.source_address)
+            retrieved_data = NetworkPullCommunication.get_data(device.source_address)
 
             if retrieved_data is None:
-                print(f'Cannot retreive {device.device_name}:{device.identifier} data from {self.source_address}')
+                print(f'Cannot retreive {device.device_name}:{device.identifier} data from {device.source_address}')
                 continue
 
             parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, ',')
