@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render
 from abc import abstractstaticmethod
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.views import View
 import requests
 
@@ -8,6 +9,33 @@ from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
+
+
+
+
+
+def home(request):
+    return render(request, 'index.html', {})
+
+def rooms(request):
+    # if request.user.groups.filter(name = "Staff").exists():
+    rooms = Room.objects.all()
+    return render(request, 'rooms.html', {'rooms':rooms})
+
+    # raise Http404()
+
+def devices(request):
+    return render(request, 'devices.html',{
+        'push_devices': DeviceManager.get_instance().get_push_devices(),
+        'pull_devices': DeviceManager.get_instance().get_pull_devices()
+    })
+
+
+def export(request):
+    return render(request, 'export.html', {})
+# ----------------------------------------------------------------------
+# COMMUNICATION SOLUTIONS
+# ----------------------------------------------------------------------
 def testing_function(request):
 
     # communication = NetworkPullCommunication()

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block base %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light ">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item  mr-5">
+            <a class="nav-link" href="{% url 'home' %}">Přehled <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item active mr-5">
+            <a class="nav-link " href="{% url 'rooms' %}">Místnosti</a>
+            </li>
+            <li class="nav-item mr-5">
+            <a class="nav-link" href="{% url 'devices' %}">Senzory</a>
+            </li>
+            <li class="nav-item mr-5">
+                <a class="nav-link" href="{% url 'export' %}">Export dat</a>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Odhlásit se</button>
+        </form>
+        </div>
+    </div>
+  </nav>
+
+
+<h1 class="mt-5">Přehled místností</h1>
+
+<table class="table table-stripped">
+    <tr class="thead-dark">
+        <th>Název</th>
+        <th>Počet senzorů</th>
+    </tr>
+  {% for room in rooms %}
+  <tr> 
+    <td>{{ room.name }}</td>
+    <td>{{ room.get_sensors_count }}</td>
+     
+  </tr>
+  {% empty %}
+    <p style="color: red; font-style: italic;">Nebyly nalezeny žádné místnosti.</p>
+  {% endfor %}
+  </table>
+
+
+{% endblock  %}

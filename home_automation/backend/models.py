@@ -10,15 +10,26 @@ from .helpers.parser import *
 class Room(models.Model):
     name = models.CharField(max_length=10)
 
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def get_sensors_count(self):
+        return Device.objects.filter(room=self).count()
 # ----------
 # DEVICE MODEL
 # ----------
+def default_set():
+    return Room.objects.get(name='Kitchen').id
+
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
     device_name = models.CharField(max_length=20, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, default=default_set)
 
     def __str__(self):
         return f'{self.identifier}'
+
 
 
 class PushDevice(Device):
@@ -31,8 +42,7 @@ class PullDevice(Device):
         NETWORK = 'network'
         SERIALBUS = 'serial_bus'
     source_type = models.CharField(max_length=20, choices=CHANNELS.choices, default=CHANNELS.NETWORK)
-
-
+    
     class FORMATS(models.TextChoices):
         CSV = 'csv'
         PARAMETRES = 'parametres'

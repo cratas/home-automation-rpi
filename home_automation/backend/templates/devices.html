@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block base %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light ">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item mr-5">
+            <a class="nav-link" href="{% url 'home' %}">Přehled <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item mr-5">
+            <a class="nav-link " href="{% url 'rooms' %}">Místnosti</a>
+            </li>
+            <li class="nav-item active mr-5">
+            <a class="nav-link" href="{% url 'devices' %}">Senzory</a>
+            </li>
+            <li class="nav-item mr-5">
+                <a class="nav-link" href="{% url 'export' %}">Export dat</a>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Odhlásit se</button>
+        </form>
+        </div>
+    </div>
+  </nav>
+
+
+<h1 class="mt-5">Přehled Senzorů</h1>
+
+<h2 class="mt-5">Senzory komunikace typu PULL</h1>
+<table class="table table-striped">
+    <tr class="thead-dark">
+        <th>ID</th>
+        <th>Název</th>
+        <th>Místnost</th>
+        <th>Adresa pro dotázání</th>
+        <th>Zdroj komunikace</th>
+        <th>Formát přenášených dat</th>
+    </tr>
+  {% for pull_device in pull_devices %}
+  <tr> 
+    <td>{{ pull_device.identifier }}</td>
+    <td>{{ pull_device.device_name }}</td>
+    <td>{{ pull_device.room.name }}</td>
+    <td>{{ pull_device.source_address }}</td>
+    <td>{{ pull_device.source_type }}</td>
+    <td>{{ pull_device.format }}</td>
+
+
+
+  </tr>
+  {% empty %}
+    <p style="color: red; font-style: italic;">Nebyly nalezeny žádné senzory.</p>
+  {% endfor %}
+  </table> 
+
+    <h2 class="mt-5">Senzory komunikace typu PUSH</h1>
+    <table class="table table-striped">
+        <tr class="thead-dark">
+            <th>ID</th>
+            <th>Název</th>
+            <th>Místnost</th>
+        </tr>
+        {% for push_device in push_devices %}
+        <tr> 
+        <td>{{ push_device.identifier }}</td>
+        <td>{{ push_device.device_name }}</td>
+        <td>{{ push_device.room.name }}</td>
+        </tr>
+        {% empty %}
+        <p style="color: red; font-style: italic;">Nebyly nalezeny žádné senzory.</p>
+        {% endfor %}
+        </table> 
+
+{% endblock  %}
