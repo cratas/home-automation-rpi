@@ -37,7 +37,7 @@ class Device(PolymorphicModel):
     
 
     def __str__(self):
-        return f'{self.identifier}'
+        return f'{self.identifier}, {self.device_name}, {self.room.name}'
 
     def set_active(self):
         self.is_active = True
@@ -45,10 +45,8 @@ class Device(PolymorphicModel):
     def get_values(self):
         return DeviceValuesList.objects.filter(device=self)
 
-
 class PushDevice(Device):
-    def __str__(self):
-        return f'Push device:{self.identifier}'
+    pass
 
 class PullDevice(Device):
     source_address = models.CharField(max_length=50, unique=True, null=True)
@@ -62,11 +60,6 @@ class PullDevice(Device):
         PARAMETRES = 'parametres'
     format = models.CharField(max_length=20, choices=FORMATS.choices, null=True)
 
-    def __str__(self):
-        return f'Pull device:{self.identifier}, {self.source_address}, {self.format}, {self.source_type}'
-
-
- 
 # ----------    
 # DEVICE VALUES LIST MODEL
 # ----------

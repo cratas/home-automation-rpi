@@ -5,6 +5,8 @@ from django.http import HttpResponse, Http404
 from django.views import View
 import requests
 
+from .forms import ExportForm
+
 from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
@@ -31,7 +33,9 @@ def devices(request):
 
 
 def export(request):
-    return render(request, 'export.html', {})
+    export_form = ExportForm()
+
+    return render(request, 'export.html', {'export_form':export_form})
 # ----------------------------------------------------------------------
 # COMMUNICATION SOLUTIONS
 # ----------------------------------------------------------------------
