@@ -1,3 +1,13 @@
 .accordion-toggle {
     cursor: pointer;
 }
+
+.non-active-device {
+    color: red;
+    font-weight: bold;
+}
+
+.active-device {
+    color: green;
+    font-weight: bold;
+}

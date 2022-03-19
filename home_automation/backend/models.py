@@ -1,9 +1,10 @@
 from email.policy import default
 from random import choices
 from django.db import models
+from django.forms import DateTimeField
 from polymorphic.models import PolymorphicModel
 from .helpers.parser import *
-
+from datetime import datetime
 # ----------
 # ROOM MODEL
 # ----------
@@ -14,8 +15,11 @@ class Room(models.Model):
     def __str__(self):
         return f'{self.name}'
 
-    def get_sensors_count(self):
-        return Device.objects.filter(room=self).count()
+    def get_active_dev_count(self):
+        return Device.objects.filter(room=self, is_active=True).count()
+
+    def get_non_active_dev_count(self):
+        return Device.objects.filter(room=self, is_active=False).count()
 
     def get_devices(self):
         return Device.objects.filter(room=self)
@@ -23,13 +27,14 @@ class Room(models.Model):
 # DEVICE MODEL
 # ----------
 def default_set():
-    return Room.objects.get(name='Kitchen').id
+    return Room.objects.get(name='Kuchyně').id
 
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
     device_name = models.CharField(max_length=20, null=True)
     is_active = models.BooleanField(default=False)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, default=default_set)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    
 
     def __str__(self):
         return f'{self.identifier}'
@@ -67,6 +72,8 @@ class PullDevice(Device):
 # ----------
 class DeviceValuesList(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    measurment_time = models.DateTimeField(auto_now_add=True, blank=True)
+
 
     def __str__(self):
         values = BaseValueObject.objects.filter(device_values=self)
@@ -74,7 +81,7 @@ class DeviceValuesList(models.Model):
 
         for value_object in values:
             values_string+= f'{value_object.value_title}:{value_object.value} | '
-        return values_string
+        return f'{self.measurment_time} | {values_string}'
 
     def get_values(self):
         return BaseValueObject.objects.filter(device_values=self)

@@ -36,13 +36,15 @@
 <table class="table table-stripped">
     <tr class="thead-dark">
         <th>Název</th>
-        <th>Počet senzorů</th>
+        <th>Počet aktivních senzorů</th>
+        <th>Počet neaktivních senzorů</th>
+
     </tr>
   {% for room in rooms %}
   <tr> 
     <td>{{ room.name }}</td>
-    <td>{{ room.get_sensors_count }}</td>
-     
+    <td><span class="active-device">{{ room.get_active_dev_count }}</span></td>
+    <td><span class="non-active-device">{{ room.get_non_active_dev_count }}</span></td>
   </tr>
   {% empty %}
     <p style="color: red; font-style: italic;">Nebyly nalezeny žádné místnosti.</p>

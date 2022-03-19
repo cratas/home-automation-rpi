@@ -37,10 +37,9 @@ def export(request):
 # ----------------------------------------------------------------------
 def testing_function(request):
 
-    # communication = NetworkPullCommunication()
-    # communication.process_data()
-    # print(DeviceManager.get_instance().get_pull_netowrk_devices())
-    # NetworkPullCommunication.process_data()
+
+    # print(DeviceManager.get_instance().get_active_pull_netowrk_devices())
+    NetworkPullCommunication.process_data()
 
     return HttpResponse("sdfsdf")
 
@@ -70,7 +69,7 @@ class NetworkPullCommunication(PullCommunication):
 
     def process_data():
 
-        for device in DeviceManager.get_instance().get_pull_devices():
+        for device in DeviceManager.get_instance().get_active_pull_network_devices():
             retrieved_data = NetworkPullCommunication.get_data(device.source_address)
 
             if retrieved_data is None:
@@ -86,6 +85,8 @@ class NetworkPullCommunication(PullCommunication):
 
                 #iterate over every dict inside list
                 for key, value in dict_object.items():
+                    if key == 'id':
+                        continue
                     #convert to correct float format
                     if "," in value:
                         value = value.replace(',','.')
@@ -120,7 +121,7 @@ class PushCommunication():
 
         #if device with incoming id does not exist, method will return False
         try:
-            device = PushDevice.objects.get(identifier=device_identifier)
+            device = DeviceManager.get_instance().get_active_push_network_devices().get(identifier=device_identifier)
         except ObjectDoesNotExist:
             return False
 

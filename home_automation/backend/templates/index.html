@@ -96,8 +96,11 @@
                                             <td>PULL</td>
                                         {% endif %}
 
-                                      <td>{{device.is_active}}</td>
-
+                                        {% if device.is_active|lower == 'true' %}
+                                            <td><i class=" active-device fa-solid fa-circle-check"></i></td>
+                                        {% else %}
+                                            <td><i class="non-active-device fa-solid fa-circle-xmark"></i></td>
+                                        {% endif %}
                                    </tr>
                                    <tr>
                                       <td colspan="12" class="hiddenRow">
@@ -105,15 +108,17 @@
                                             <table class="table table-striped">
                                                 <thead class="thead-dark">
                                                   <tr>
+                                                        <th>Čas měření</th>
                                                     {% for v in device.get_values.0.get_values %}
                                                         <th>{{v.value_title}}</th>
                                                     {% endfor %}
                                                   </tr>
                                                </thead>
                                                <tbody>
-                                                  {% for value_list in device.get_values %}
+                                                  {% for values_list in device.get_values %}
                                                   <tr>
-                                                    {% for value_object in value_list.get_values %}
+                                                      <td>{{ values_list.measurment_time|date:'Y-m-d H:i:s' }}</td>
+                                                    {% for value_object in values_list.get_values %}
                                                         <td>{{value_object.value}}</td>
                                                     {% endfor %}
                                                   </tr>
