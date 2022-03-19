@@ -16,6 +16,9 @@ class Room(models.Model):
 
     def get_sensors_count(self):
         return Device.objects.filter(room=self).count()
+
+    def get_devices(self):
+        return Device.objects.filter(room=self)
 # ----------
 # DEVICE MODEL
 # ----------
@@ -25,11 +28,17 @@ def default_set():
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
     device_name = models.CharField(max_length=20, null=True)
+    is_active = models.BooleanField(default=False)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, default=default_set)
 
     def __str__(self):
         return f'{self.identifier}'
 
+    def set_active(self):
+        self.is_active = True
+
+    def get_values(self):
+        return DeviceValuesList.objects.filter(device=self)
 
 
 class PushDevice(Device):
@@ -58,6 +67,19 @@ class PullDevice(Device):
 # ----------
 class DeviceValuesList(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
+
+    def __str__(self):
+        values = BaseValueObject.objects.filter(device_values=self)
+        values_string = ''
+
+        for value_object in values:
+            values_string+= f'{value_object.value_title}:{value_object.value} | '
+        return values_string
+
+    def get_values(self):
+        return BaseValueObject.objects.filter(device_values=self)
+
+
 
 # ----------
 # VALUE OBJECT MODEL

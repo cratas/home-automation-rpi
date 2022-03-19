@@ -31,12 +31,110 @@
     </nav>
 
 
-    <!-- Begin page content -->
-    <main role="main" class="container">
-        <h1 class="mt-5">Sticky footer with fixed navbar</h1>
-        <p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added with <code>padding-top: 60px;</code> on the <code>body &gt; .container</code>.</p>
-        <p>Back to <a href="../sticky-footer/">the default sticky footer</a> minus the navbar.</p>
-      </main>
+
+    <div class="col-md-12">
+        <div class="panel panel-default">
+           <div class="panel-heading">
+                <h1 class="mt-5 mb-4">Přehled</h1>
+           </div>
+           <div class="panel-body">
+              <table class="table table-condensed table-striped">
+                 <thead class="thead-dark">
+                    <tr>
+                       <th>Název místnosti</td>
+                       <th>Počet senzorů</td>
+                    </tr>
+                 </thead>
+                 <tbody>
+                    {% for room in rooms %}
+                    <tr data-toggle="collapse" data-target="#room{{room.id}}" class="accordion-toggle">
+                       <td>{{room.name}}</td>
+                       <td>{{room.get_sensors_count}}</td>
+                    </tr>
+                    <tr>
+                       <td colspan="12" class="hiddenRow">
+                          <div class="accordian-body collapse" id="room{{room.id}}">
+                             <table class="table table-striped">
+                                <thead class="thead-dark">
+                                   <tr class="info">
+                                      <th>ID</th>
+                                      <th>Název</th>
+                                      <th>Adresa pro datázání</th>
+                                      <th>Zdroj komunikace</th>
+                                      <th>Formát dat</th>
+                                      <th>Typ</th>
+                                      <th>Akitvní</th>
+
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                    {% for device in room.get_devices %}
+                                    <tr data-toggle="collapse"  class="accordion-toggle" data-target="#device{{device.id}}">
+                                      <td>{{device.identifier}}</td>
+                                      <td>{{device.device_name}}</td>
+                                        {% if not device.source_address %}
+                                            <td>-</td>
+                                        {% else %}
+                                            <td>{{device.source_address}}</td>
+                                        {% endif %}
+
+                                        {% if not device.source_type %}
+                                        <td>-</td>
+                                        {% else %}
+                                            <td>{{device.source_type}}</td>
+                                        {% endif %}
+
+                                        {% if not device.format %}
+                                        <td>-</td>
+                                        {% else %}
+                                            <td>{{device.format}}</td>
+                                        {% endif %}
+                                      
+                                        {% if not device.source_address %}
+                                            <td>PUSH</td>
+                                        {% else %}
+                                            <td>PULL</td>
+                                        {% endif %}
+
+                                      <td>{{device.is_active}}</td>
+
+                                   </tr>
+                                   <tr>
+                                      <td colspan="12" class="hiddenRow">
+                                         <div class="accordian-body collapse" id="device{{device.id}}">
+                                            <table class="table table-striped">
+                                                <thead class="thead-dark">
+                                                  <tr>
+                                                    {% for v in device.get_values.0.get_values %}
+                                                        <th>{{v.value_title}}</th>
+                                                    {% endfor %}
+                                                  </tr>
+                                               </thead>
+                                               <tbody>
+                                                  {% for value_list in device.get_values %}
+                                                  <tr>
+                                                    {% for value_object in value_list.get_values %}
+                                                        <td>{{value_object.value}}</td>
+                                                    {% endfor %}
+                                                  </tr>
+                                                  {% endfor %}
+                                               </tbody>
+                                            </table>
+                                         </div>
+                                      </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                             </table>
+                          </div>
+                       </td>
+                    </tr>
+                    {% endfor %}
+                 </tbody>
+              </table>
+           </div>
+        </div>
+     </div>
 
 
 {% endblock  %}

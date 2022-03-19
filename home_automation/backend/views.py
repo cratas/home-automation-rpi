@@ -11,11 +11,10 @@ from .models import *
 
 
 
-
-
-
 def home(request):
-    return render(request, 'index.html', {})
+
+    rooms = Room.objects.all()
+    return render(request, 'index.html', {'rooms':rooms})
 
 def rooms(request):
     # if request.user.groups.filter(name = "Staff").exists():
