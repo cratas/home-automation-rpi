@@ -30,14 +30,31 @@
     </div>
   </nav>
 
-<h1 class="mt-5">Export dat</h1>
-
+<h1 class="mt-5 mb-3">Export dat</h1>
 
 <form action="{% url 'export' %}" method="post">{% csrf_token %}
-       <tr>
-           <td style="text-align: right;">{{ export_form.something }}</td>
-           <td style="text-align: right;">{{ export_form.city }}</td>
-       </tr>
-</form>
+       <table class="table">
+         <tr>
+            <td>Od <span style="color: gray; margin-left: 1rem;">(03/02/2022, 3:32 AM)</span></td>
+          <td style="text-align: right; ">{{ export_form.from_date }}</td>
+          <td style="text-align: right; ">{{ export_form.from_time }}</td>
+
+        </tr>
+         <tr>
+          <td>Do <span style="color: gray; margin-left: 1rem;">(05/02/2022, 2:22 AM)</span></td>
+          <td style="text-align: right; ">{{ export_form.to_date }}</td>
+        </tr>
+         <tr>
+             <td>Senzor</td>
+             <td style="text-align: right;">{{ export_form.device }}</td>
+
+         </tr>
+      </table>
+      <div style="text-align: center">
+        <input type="submit" value="Exportovat data" class="btn btn-outline-success my-2 my-sm-0">
+      <div>
+ </form>
+
+
 
 {% endblock  %}

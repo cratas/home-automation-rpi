@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import  NetworkPushCommunication, testing_function, home, rooms, devices, export
+from .views import  NetworkPushCommunication, testing_function, home, rooms, devices, Export
 
 urlpatterns = [
 
@@ -7,7 +7,7 @@ urlpatterns = [
     path('', home, name="home"),
     path('rooms/', rooms, name="rooms"),
     path('devices/', devices, name="devices"),
-    path('export/', export, name="export"),
+    path('export/', Export.as_view(), name="export"),
 
     #--------
     # URLS for communication with devices

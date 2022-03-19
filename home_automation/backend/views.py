@@ -11,8 +11,6 @@ from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
-
-
 def home(request):
 
     rooms = Room.objects.all()
@@ -32,10 +30,36 @@ def devices(request):
     })
 
 
-def export(request):
-    export_form = ExportForm()
+class Export(View):
+    def get(self, request):
+        export_form = ExportForm()
+        return render(request, 'export.html', {'export_form':export_form})
 
-    return render(request, 'export.html', {'export_form':export_form})
+    def post(self, request):
+        export_form = ExportForm(request.POST)
+        if export_form.is_valid():
+
+            from_date = export_form.cleaned_data['from_date']
+            to_date = export_form.cleaned_data['to_date']
+            device = export_form.cleaned_data['device']
+
+
+            print(from_date)
+            print(to_date)
+
+            # print(to_date)
+
+            d = Device.objects.get(pk=device)
+            vo = DeviceValuesList.objects.filter(device=d, measurment_time__lte=to_date, measurment_time__gte=from_date)
+
+            print(vo)
+
+
+            # export_form = ExportForm()
+        return render(request, 'export.html', {'export_form':export_form})
+
+        
+
 # ----------------------------------------------------------------------
 # COMMUNICATION SOLUTIONS
 # ----------------------------------------------------------------------
