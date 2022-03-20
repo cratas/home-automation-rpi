@@ -31,7 +31,9 @@
   </nav>
 
 <h1 class="mt-5 mb-3">Export dat</h1>
-
+{% if no_data_warning %}
+<p style="color: red;">Pro vybraný senzor neexistují naměřená data ve vybraném časovém rozmezí.</p>
+{% endif %}
 <form action="{% url 'export' %}" method="post">{% csrf_token %}
        <table class="table">
          <tr>

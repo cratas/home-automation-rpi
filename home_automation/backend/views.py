@@ -1,3 +1,4 @@
+from tkinter.messagebox import NO
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from abc import abstractstaticmethod
@@ -47,6 +48,10 @@ class Export(View):
             #select values by values from form
             selected_device = Device.objects.get(pk=device)
             selected_values = DeviceValuesList.objects.filter(device=selected_device, measurment_time__lte=to_date, measurment_time__gte=from_date)
+
+            if not selected_values:
+                export_form = ExportForm()
+                return render(request, 'export.html', {'no_data_warning': '1', 'export_form':export_form})
 
             #creating first row of csv file with titles
             value_titles = ['time']
