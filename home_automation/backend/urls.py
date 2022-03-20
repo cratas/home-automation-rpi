@@ -8,7 +8,6 @@ urlpatterns = [
     path('rooms/', rooms, name="rooms"),
     path('devices/', devices, name="devices"),
     path('export/', Export.as_view(), name="export"),
-
     #--------
     # URLS for communication with devices
     #--------

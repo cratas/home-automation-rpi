@@ -11,6 +11,7 @@ from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
+
 def home(request):
 
     rooms = Room.objects.all()
@@ -38,25 +39,43 @@ class Export(View):
     def post(self, request):
         export_form = ExportForm(request.POST)
         if export_form.is_valid():
-
+            #getting values from form
             from_date = export_form.cleaned_data['from_date']
             to_date = export_form.cleaned_data['to_date']
             device = export_form.cleaned_data['device']
 
+            #select values by values from form
+            selected_device = Device.objects.get(pk=device)
+            selected_values = DeviceValuesList.objects.filter(device=selected_device, measurment_time__lte=to_date, measurment_time__gte=from_date)
 
-            print(from_date)
-            print(to_date)
+            #creating first row of csv file with titles
+            value_titles = ['time']
+            for titles in selected_values.first().get_values():
+                value_titles.append(titles.value_title)
 
-            # print(to_date)
+            #creating and setting response
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=data.csv'
 
-            d = Device.objects.get(pk=device)
-            vo = DeviceValuesList.objects.filter(device=d, measurment_time__lte=to_date, measurment_time__gte=from_date)
+            #creating csv writer
+            writer = csv.writer(response)
+            #write titles into csv file
+            writer.writerow(value_titles)
 
-            print(vo)
+            #write values into csv file
+            for value_object in selected_values:
+                #adding formated measurment_time into row
+                row = [value_object.measurment_time.strftime("%Y-%m-%d %H:%M:%S")]
+                #adding all values into row
+                [row.append(val.value) for val in value_object.get_values()]
+                #write row into csv file
+                writer.writerow(row)
+
+            return response
 
 
             # export_form = ExportForm()
-        return render(request, 'export.html', {'export_form':export_form})
+        # return render(request, 'export.html', {'export_form':export_form})
 
         
 
