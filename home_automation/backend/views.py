@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
-from abc import abstractstaticmethod
 from django.http import HttpResponse, Http404
+from abc import abstractstaticmethod
 from django.views import View
 import requests
 
@@ -17,23 +17,26 @@ def home(request):
     return render(request, 'index.html', {'rooms':rooms})
 
 #view function for creating new room
-def rooms(request):
+def add_rooms(request):
     room_form = RoomForm(request.POST or None)
 
+    #if form is valid, save new room into database
     if room_form.is_valid():
         room_form.save()
-        return redirect('rooms') 
+        return redirect('add_rooms') 
 
     return render(request, 'rooms.html', {'room_form':room_form})
 
 
 def add_device(request, device_type):
 
+    #checking type of device for rendering right form
     if device_type == 'pull':
         device_form = PullDeviceForm(request.POST or None)
     else:
         device_form = PushDeviceForm(request.POST or None)
 
+    #if form is valid, save new device into database
     if device_form.is_valid():
         device_form.save()
         return redirect('home')
@@ -46,33 +49,38 @@ def add_device(request, device_type):
 def update_device(request, device_id, device_type):
     device = Device.objects.get(pk=device_id)
 
+    #checking type of device for rendering right form
     if device_type == 'pull':
         device_form = PullDeviceForm(request.POST or None, instance=device)
     else:
         device_form = PushDeviceForm(request.POST or None, instance=device)
 
+    #if form is valid, update device
     if device_form.is_valid():
         device_form.save()
         return redirect('home')
 
     return render(request, 'devicesupdate.html', {'device_form':device_form, 'device':device})
 
-
+#View class for exporting data
 class Export(View):
+    #get function for show export form
     def get(self, request):
         export_form = ExportForm()
         return render(request, 'export.html', {'export_form':export_form})
 
+    #post function for validation and creating csv file by filled values
     def post(self, request):
         export_form = ExportForm(request.POST)
         if export_form.is_valid():
             #getting values from form
             from_date = export_form.cleaned_data['from_date']
             to_date = export_form.cleaned_data['to_date']
-            device = export_form.cleaned_data['device']
+            #getting device pk, look for ExportForm for details
+            device_pk = export_form.cleaned_data['device']
 
             #select values by values from form
-            selected_device = Device.objects.get(pk=device)
+            selected_device = DeviceManager.get_instance().get_device(device_pk)
             selected_values = DeviceValuesList.objects.filter(device=selected_device, measurment_time__lte=to_date, measurment_time__gte=from_date)
 
             if not selected_values:
@@ -104,18 +112,10 @@ class Export(View):
 
             return response
 
-
-            # export_form = ExportForm()
-        # return render(request, 'export.html', {'export_form':export_form})
-
-        
-
 # ----------------------------------------------------------------------
 # COMMUNICATION SOLUTIONS
 # ----------------------------------------------------------------------
 def testing_function(request):
-
-
     # print(DeviceManager.get_instance().get_active_pull_netowrk_devices())
     NetworkPullCommunication.process_data()
 
@@ -126,16 +126,19 @@ def testing_function(request):
 # --------------
 class PullCommunication(ABC):
     
+    #abstract function for getting data from different sources
     @abstractstaticmethod
     def get_data():
         pass
 
+    #abstract function for process data and create new objects
     @abstractstaticmethod
     def process_data():
         pass
 
 class NetworkPullCommunication(PullCommunication):
     
+    #getting data via https request
     def get_data(source_address):
         try:
             response = requests.get(source_address,timeout=3)
@@ -165,6 +168,7 @@ class NetworkPullCommunication(PullCommunication):
                 for key, value in dict_object.items():
                     if key == 'id':
                         continue
+
                     #convert to correct float format
                     if "," in value:
                         value = value.replace(',','.')

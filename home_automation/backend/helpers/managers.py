@@ -1,4 +1,4 @@
-from backend.models import PullDevice, PushDevice
+from backend.models import Device, PullDevice, PushDevice
 
 # --------------
 # SINGLETON Class for managing different types of device
@@ -18,7 +18,11 @@ class DeviceManager:
         else:
             DeviceManager.__instance = self
 
-    # simple device getters
+    #get device by pk
+    def get_device(self, primary_key):
+        return Device.objects.get(pk=primary_key)
+
+    #simple device getters
     def get_devices(self):
         return PullDevice.objects.all()
 
@@ -38,4 +42,5 @@ class DeviceManager:
 
     def get_active_push_network_devices(self):
         return PushDevice.objects.filter(is_active=True)
+
 

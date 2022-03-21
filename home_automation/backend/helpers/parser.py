@@ -64,7 +64,7 @@ class ParserFactory:
         else:
             raise Exception("Unknown type of data format")
 
-
+#help function used for recognize incoming data
 def is_number(sample_str):
     result = True
     try:
