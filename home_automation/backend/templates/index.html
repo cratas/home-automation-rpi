@@ -63,8 +63,8 @@
                                       <th>Zdroj komunikace</th>
                                       <th>Formát dat</th>
                                       <th>Typ</th>
-                                      <th>Akitvní</th>
-
+                                      <th>Aktivní</th>
+                                      <th></th>
                                    </tr>
                                 </thead>
                                 <tbody>
@@ -101,6 +101,17 @@
                                         {% else %}
                                             <td><i class="non-active-device fa-solid fa-circle-xmark"></i></td>
                                         {% endif %}
+
+                                        
+                                        <td align="right">
+                                            {% if not device.source_address %}
+                                                <a href ={% url 'update-device' device.id 'push' %} class="btn btn-secondary btn-sm">Nastavení</a>
+                                            {% else %}
+                                                <a href ={% url 'update-device' device.id 'pull' %} class="btn btn-secondary btn-sm">Nastavení</a>
+                                            {% endif %}
+                                        </td>
+                                            
+
                                    </tr>
                                    <tr>
                                       <td colspan="12" class="hiddenRow">

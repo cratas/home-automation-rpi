@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block base %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light ">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item mr-5">
+            <a class="nav-link" href="{% url 'home' %}">Přehled <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item mr-5">
+            <a class="nav-link " href="{% url 'rooms' %}">Místnosti</a>
+            </li>
+            <li class="nav-item mr-5">
+            <a class="nav-link" href="{% url 'devices' %}">Senzory</a>
+            </li>
+            <li class="nav-item active mr-5">
+                <a class="nav-link" href="{% url 'export' %}">Export dat</a>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Odhlásit se</button>
+        </form>
+        </div>
+    </div>
+  </nav>
+
+<h1 class="mt-5 mb-3">Nastavení senzoru</h1>
+
+
+<form action="" method="post">{% csrf_token %}
+       {% comment %} <table class="table">
+         <tr>
+            <td>Od <span style="color: gray; margin-left: 1rem;">(03/02/2022, 3:32 AM)</span></td>
+          <td style="text-align: right; ">{{ device_form.device_name }}</td>
+
+        </tr>
+         <tr>
+          <td>Do <span style="color: gray; margin-left: 1rem;">(05/02/2022, 08:22 PM)</span></td>
+          <td style="text-align: right; ">{{ device_form.device_name }}</td>
+        </tr>
+         <tr>
+             <td>Senzor</td>
+             <td style="text-align: right;">{{ export_form.device }}</td>
+
+         </tr>
+      </table> {% endcomment %}
+
+      <table class="table">
+        <tr>
+            <td>Název senzoru</td>
+            <td style="text-align: right; ">{{ device_form.device_name }}</td>
+       </tr>
+        <tr>
+            <td>ID</td>
+            <td style="text-align: right; ">{{ device_form.identifier }}</td>
+        </tr>
+        <tr>
+            <td>Aktivní</td>
+            <td style="text-align: right;">{{ device_form.is_active }}</td>
+        </tr>
+        <tr>
+            <td>Místnost</td>
+            <td style="text-align: right;">{{ device_form.room }}</td>
+        </tr>
+
+        {% if device.source_address %}
+            <tr>
+                <td>Adresa senzoru</td>
+                <td style="text-align: right;">{{ device_form.source_address }}</td>
+            </tr>
+            <tr>
+                <td>Typ komunikace</td>
+                <td style="text-align: right;">{{ device_form.source_type }}</td>
+            </tr>
+            <tr>
+                <td>Formát přenášených dat</td>
+                <td style="text-align: right;">{{ device_form.format }}</td>
+            </tr>
+        {% endif %}
+        </table>
+
+      <div style="text-align: center">
+        <input type="submit" value="Aktualizovat" class="btn btn-outline-success my-2 my-sm-0">
+      <div>
+ </form>
+
+
+
+{% endblock  %}
