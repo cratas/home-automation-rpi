@@ -1,4 +1,3 @@
-from tkinter.messagebox import NO
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
 from abc import abstractstaticmethod
@@ -6,41 +5,49 @@ from django.http import HttpResponse, Http404
 from django.views import View
 import requests
 
-from .forms import PullDeviceForm, PushDeviceForm, ExportForm
+from .forms import PullDeviceForm, PushDeviceForm, ExportForm, RoomForm
 
 from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
-
+#view function returning all rooms in house
 def home(request):
     rooms = Room.objects.all()
     return render(request, 'index.html', {'rooms':rooms})
 
-
-#view function returning all rooms in house
+#view function for creating new room
 def rooms(request):
-    # if request.user.groups.filter(name = "Staff").exists():
-    rooms = Room.objects.all()
-    return render(request, 'rooms.html', {'rooms':rooms})
+    room_form = RoomForm(request.POST or None)
 
-    # raise Http404()
+    if room_form.is_valid():
+        room_form.save()
+        return redirect('rooms') 
 
-#view function returning devices
-def devices(request):
-    return render(request, 'devices.html',{
-        'push_devices': DeviceManager.get_instance().get_push_devices(),
-        'pull_devices': DeviceManager.get_instance().get_pull_devices()
-    })
+    return render(request, 'rooms.html', {'room_form':room_form})
 
+
+def add_device(request, device_type):
+
+    if device_type == 'pull':
+        device_form = PullDeviceForm(request.POST or None)
+    else:
+        device_form = PushDeviceForm(request.POST or None)
+
+    if device_form.is_valid():
+        device_form.save()
+        return redirect('home')
+
+    return render(request, 'devices.html', {'device_form':device_form, 'device_type': device_type})
+    
+
+
+#view function for updating devices
 def update_device(request, device_id, device_type):
     device = Device.objects.get(pk=device_id)
 
-
     if device_type == 'pull':
         device_form = PullDeviceForm(request.POST or None, instance=device)
-        print("i'm in pull")
-
     else:
         device_form = PushDeviceForm(request.POST or None, instance=device)
 

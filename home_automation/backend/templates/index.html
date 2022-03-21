@@ -16,12 +16,19 @@
                 <li class="nav-item  mr-5">
                 <a class="nav-link " href="{% url 'rooms' %}">Místnosti</a>
                 </li>
-                <li class="nav-item mr-5">
-                <a class="nav-link" href="{% url 'devices' %}">Senzory</a>
+                <li class="nav-item dropdown mr-5">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Senzory
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                      <a class="dropdown-item" href="{% url 'add_device' 'pull' %}">Přidat Pull senzor</a>
+                      <a class="dropdown-item" href="{% url 'add_device' 'push' %}">Přidat Push senzor</a>
+                    </div>
                 </li>
                 <li class="nav-item mr-5">
                     <a class="nav-link" href="{% url 'export' %}">Export dat</a>
                 </li>
+
             </ul>
             <form class="form-inline my-2 my-lg-0">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Odhlásit se</button>
@@ -35,21 +42,23 @@
     <div class="col-md-12">
         <div class="panel panel-default">
            <div class="panel-heading">
-                <h1 class="mt-5 mb-4">Přehled</h1>
+                <h1 class="mt-5 mb-5">Přehled</h1>
            </div>
            <div class="panel-body">
               <table class="table table-condensed table-striped">
                  <thead class="thead-dark">
                     <tr>
                        <th>Název místnosti</td>
-                       <th>Počet senzorů</td>
+                       <th>Počet aktivních senzorů</td>
+                       <th>Počet neaktivních senzorů</td>
                     </tr>
                  </thead>
                  <tbody>
                     {% for room in rooms %}
                     <tr data-toggle="collapse" data-target="#room{{room.id}}" class="accordion-toggle">
                        <td>{{room.name}}</td>
-                       <td>{{room.get_sensors_count}}</td>
+                       <td><span class="active-device">{{ room.get_active_dev_count }}</span></td>
+                        <td><span class="non-active-device">{{ room.get_non_active_dev_count }}</span></td>
                     </tr>
                     <tr>
                        <td colspan="12" class="hiddenRow">
@@ -73,19 +82,19 @@
                                       <td>{{device.identifier}}</td>
                                       <td>{{device.device_name}}</td>
                                         {% if not device.source_address %}
-                                            <td>-</td>
+                                            <td></td>
                                         {% else %}
                                             <td>{{device.source_address}}</td>
                                         {% endif %}
 
                                         {% if not device.source_type %}
-                                        <td>-</td>
+                                            <td></td>
                                         {% else %}
                                             <td>{{device.source_type}}</td>
                                         {% endif %}
 
                                         {% if not device.format %}
-                                        <td>-</td>
+                                            <td></td>
                                         {% else %}
                                             <td>{{device.format}}</td>
                                         {% endif %}
@@ -105,9 +114,9 @@
                                         
                                         <td align="right">
                                             {% if not device.source_address %}
-                                                <a href ={% url 'update-device' device.id 'push' %} class="btn btn-secondary btn-sm">Nastavení</a>
+                                                <a href ={% url 'update-device' device.id 'push' %} class="btn btn-success btn-sm">Nastavení</a>
                                             {% else %}
-                                                <a href ={% url 'update-device' device.id 'pull' %} class="btn btn-secondary btn-sm">Nastavení</a>
+                                                <a href ={% url 'update-device' device.id 'pull' %} class="btn btn-success btn-sm">Nastavení</a>
                                             {% endif %}
                                         </td>
                                             

@@ -15,6 +15,9 @@ class Room(models.Model):
     def __str__(self):
         return f'{self.name}'
 
+    def get_dev_count(self):
+        return Device.objects.filter(room=self).count()
+
     def get_active_dev_count(self):
         return Device.objects.filter(room=self, is_active=True).count()
 

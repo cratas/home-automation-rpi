@@ -1,6 +1,6 @@
 from django import forms
 from .widgets import DatePickerInput, TimePickerInput
-from .models import Device, PullDevice, PushDevice
+from .models import Device, PullDevice, PushDevice, Room
 
 class ExportForm(forms.Form):
     from_date = forms.DateTimeField(
@@ -22,6 +22,10 @@ class ExportForm(forms.Form):
     device = forms.ChoiceField(choices=[
     (choice.pk, choice) for choice in Device.objects.all()])
 
+class RoomForm(forms.ModelForm):
+    class Meta:
+        model = Room
+        fields = ['name']
 
 class PushDeviceForm(forms.ModelForm):
     class Meta:
