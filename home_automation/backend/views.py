@@ -217,6 +217,9 @@ class PushCommunication():
         for dict_object in self.retreived_data:
             values_list = DeviceValuesList.objects.create(device=device)
 
+            #variable for creating datetime from two columns
+            datetime_str = ""
+
             #iterate over every dict inside list
             for key, value in dict_object.items():
                 #ignore values with key id
@@ -227,11 +230,18 @@ class PushCommunication():
                 if key == 'Naposledy aktualizováno':
                     datetime_str = value
                     datetime_object = datetime.strptime(datetime_str, "%Y/%m/%d %H:%M:%S")
-                    print(f"formatted_datetime: {datetime_object}")
                     values_list.measurment_time = datetime_object
                     values_list.save()
 
-
+                if key == "Datum":
+                    datetime_str = value
+                    
+                if key == "Čas":
+                    datetime_str = datetime_str + ' ' + value
+                    datetime_object = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+                    values_list.measurment_time = datetime_object
+                    values_list.save()
+                    
 
                 #convert to correct float format
                 if "," in value:
