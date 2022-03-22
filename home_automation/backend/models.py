@@ -39,6 +39,7 @@ class Device(PolymorphicModel):
     is_active = models.BooleanField(default=False)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
     error_count = models.IntegerField(default=0)
+    has_error = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.identifier}, {self.device_name}, {self.room.name}'

@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, Http404
+from django.core.mail import send_mail
 from abc import abstractstaticmethod
 from django.views import View
 import requests
@@ -154,11 +155,28 @@ class NetworkPullCommunication(PullCommunication):
             return None
 
     def process_data():
-
         for device in DeviceManager.get_instance().get_active_pull_network_devices():
             retrieved_data = NetworkPullCommunication.get_data(device.source_address)
 
+            #if there is no answer from device for the third time, system will notificate user
             if retrieved_data is None:
+                device.error_count = device.error_count + 1
+                device.save()
+
+                if(device.error_count == 3):
+                    device.has_error=True
+                    device.is_active=False
+                    device.error_count=0
+                    device.save()
+                    #sending email to user, contact informations has to be set
+                    send_mail(
+                        'Device error',
+                        f'Communication with id: {device.identifier} failed.',
+                        'from@example.com', 
+                        ['to@example.com'], #list of users
+                        fail_silently=False,
+                    )
+                    
                 print(f'Cannot retreive {device.device_name}:{device.identifier} data from {device.source_address}')
                 continue
 
@@ -232,16 +250,18 @@ class PushCommunication():
                     datetime_object = datetime.strptime(datetime_str, "%Y/%m/%d %H:%M:%S")
                     values_list.measurment_time = datetime_object
                     values_list.save()
+                    continue
 
                 if key == "Datum":
                     datetime_str = value
+                    continue
                     
                 if key == "Čas":
                     datetime_str = datetime_str + ' ' + value
                     datetime_object = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
                     values_list.measurment_time = datetime_object
                     values_list.save()
-                    
+                    continue
 
                 #convert to correct float format
                 if "," in value:

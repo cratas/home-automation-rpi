@@ -78,7 +78,13 @@
                                 </thead>
                                 <tbody>
                                     {% for device in room.get_devices %}
-                                    <tr data-toggle="collapse"  class="accordion-toggle" data-target="#device{{device.id}}">
+
+                                    {% if not device.has_error|lower == 'true' %}
+                                        <tr data-toggle="collapse"  class="accordion-toggle" data-target="#device{{device.id}}">
+                                    {% else %}
+                                        <tr data-toggle="collapse"  class="accordion-toggle" style="background-color: #F29C9E;" data-target="#device{{device.id}}">
+                                    {% endif %}
+
                                       <td>{{device.identifier}}</td>
                                       <td>{{device.device_name}}</td>
                                         {% if not device.source_address %}

@@ -37,4 +37,4 @@ class PullDeviceForm(forms.ModelForm):
     class Meta:
         model = PullDevice
         fields = ['device_name', 'identifier', 'is_active', 'room'
-                , 'source_address','source_type','format']
+                , 'source_address','source_type','format','has_error']
