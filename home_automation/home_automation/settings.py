@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'django_crontab',
     'backend.apps.BackendConfig',
     'rest_framework',
@@ -134,3 +135,8 @@ STATIC_ROOT = os.path.join(BASE_DIR,  'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TIME_INPUT_FORMATS = ('%I:%M %p',)
+
+GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models': True,
+}

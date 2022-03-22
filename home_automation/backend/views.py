@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, Http404
 from abc import abstractstaticmethod
@@ -198,6 +199,7 @@ class SerialBusPullCommunication(PullCommunication):
 class PushCommunication():
     def __init__(self):
         self.parser_type='parametres'
+        self.delimiter=';'
         self.retreived_data = None
 
     def process_data(self):
@@ -221,6 +223,16 @@ class PushCommunication():
                 if key == 'id':
                     continue
 
+                #checking if mesurment time is part of data, if no, default time is set to timestamp
+                if key == 'Naposledy aktualizováno':
+                    datetime_str = value
+                    datetime_object = datetime.strptime(datetime_str, "%Y/%m/%d %H:%M:%S")
+                    print(f"formatted_datetime: {datetime_object}")
+                    values_list.measurment_time = datetime_object
+                    values_list.save()
+
+
+
                 #convert to correct float format
                 if "," in value:
                     value = value.replace(',','.')
@@ -243,7 +255,7 @@ class NetworkPushCommunication(PushCommunication, View):
             return HttpResponse("Data NOT inserted into database")
  
         #retrieved data are already represented as dic
-        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, ',')
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data)
         parser.parse_into_dict()
 
         self.retreived_data = parser.data
@@ -259,6 +271,7 @@ class NetworkPushCommunication(PushCommunication, View):
     def post(self, request, *args, **kwargs):
         #specific format of incoming data
         self.parser_type = kwargs['name']
+        self.delimiter = kwargs['delimiter']
         #getting data via post request
         incoming_data = request.body.decode('utf-8')
  
@@ -267,7 +280,7 @@ class NetworkPushCommunication(PushCommunication, View):
             return HttpResponse("Data NOT inserted into database")
  
         #parsing retrieved data via parser
-        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, ',')
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, self.delimiter)
         parser.parse_into_dict()
  
         self.retreived_data = parser.data

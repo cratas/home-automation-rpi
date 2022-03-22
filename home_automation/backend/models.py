@@ -4,6 +4,8 @@ from this import d
 from django.db import models
 from polymorphic.models import PolymorphicModel
 from .helpers.parser import *
+from django.utils import timezone
+
 # ----------
 # ROOM MODEL
 # ----------
@@ -67,7 +69,7 @@ class PullDevice(Device):
 # ----------
 class DeviceValuesList(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
-    measurment_time = models.DateTimeField(auto_now_add=True, blank=True)
+    measurment_time = models.DateTimeField(default=timezone.now)
 
 
     def __str__(self):

@@ -14,6 +14,6 @@ urlpatterns = [
     #for data insides URL parametres
     path("push/", NetworkPushCommunication.as_view()),
     #for data inside http (CSV, or PARAMETRES)
-    path("push/<name>/", NetworkPushCommunication.as_view(), name="name"),
+    path("push/<name>/<delimiter>/", NetworkPushCommunication.as_view(), name="name"),
     path("test/", testing_function),
 ]
