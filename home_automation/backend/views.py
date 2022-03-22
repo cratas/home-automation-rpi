@@ -117,7 +117,11 @@ class Export(View):
 # ----------------------------------------------------------------------
 def testing_function(request):
     # print(DeviceManager.get_instance().get_active_pull_netowrk_devices())
-    NetworkPullCommunication.process_data()
+    # NetworkPullCommunication.process_data()
+    device = Device.objects.all().first()
+    # device.error_count = 1
+    # device.save()
+    print(device.error_count)
 
     return HttpResponse("sdfsdf")
 

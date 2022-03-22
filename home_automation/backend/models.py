@@ -1,10 +1,9 @@
 from email.policy import default
 from random import choices
+from this import d
 from django.db import models
-from django.forms import DateTimeField
 from polymorphic.models import PolymorphicModel
 from .helpers.parser import *
-from datetime import datetime
 # ----------
 # ROOM MODEL
 # ----------
@@ -34,10 +33,10 @@ def default_set():
 
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
-    device_name = models.CharField(max_length=20, null=True)
+    device_name = models.CharField(max_length=30, null=True)
     is_active = models.BooleanField(default=False)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
-    
+    error_count = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.identifier}, {self.device_name}, {self.room.name}'
