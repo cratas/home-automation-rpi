@@ -56,7 +56,7 @@
                  <tbody>
                     {% for room in rooms %}
                     <tr data-toggle="collapse" data-target="#room{{room.id}}" class="accordion-toggle">
-                       <td>{{room.name}}</td>
+                       <td><span style="font-weight: bold;">{{room.name}}<span></td>
                        <td><span class="active-device">{{ room.get_active_dev_count }}</span></td>
                         <td><span class="non-active-device">{{ room.get_non_active_dev_count }}</span></td>
                     </tr>

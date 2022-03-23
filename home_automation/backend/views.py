@@ -13,12 +13,12 @@ from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
-#TODO  udelat kontrolu i u typu push
-#TODO  zkusit vyresit cashovani
-#TODO  zobrazovat posledni aktualizaci senzoru
-#TODO  zmenit ikonku push/pull
-#TODO  vyresit interval dotazovani pro kazdy senzor
-#TODO  export vsech dat, ci po senzorech
+#TODO (SOLVED) zmenit ikonku push/pull 
+#TODO (SOLVED) zobrazovat posledni aktualizaci senzoru
+#TODO (SOLVED) export vsech dat, ci po senzorech
+#TODO vyresit interval dotazovani pro kazdy senzor
+#TODO udelat kontrolu i u typu push
+#TODO zkusit vyresit cashovani
 
 #view function returning all rooms in house
 def home(request):
@@ -86,20 +86,7 @@ class Export(View):
             from_date = export_form.cleaned_data['from_date']
             to_date = export_form.cleaned_data['to_date']
             #getting device pk, look for ExportForm for details
-            device_pk = export_form.cleaned_data['device']
-
-            #select values by values from form
-            selected_device = DeviceManager.get_instance().get_device(device_pk)
-            selected_values = DeviceValuesList.objects.filter(device=selected_device, measurment_time__lte=to_date, measurment_time__gte=from_date)
-
-            if not selected_values:
-                export_form = ExportForm()
-                return render(request, 'export.html', {'no_data_warning': '1', 'export_form':export_form})
-
-            #creating first row of csv file with titles
-            value_titles = ['time']
-            for titles in selected_values.first().get_values():
-                value_titles.append(titles.value_title)
+            device_pk_list = export_form.cleaned_data['device']
 
             #creating and setting response
             response = HttpResponse(content_type='text/csv')
@@ -107,19 +94,45 @@ class Export(View):
 
             #creating csv writer
             writer = csv.writer(response)
-            #write titles into csv file
-            writer.writerow(value_titles)
 
-            #write values into csv file
-            for value_object in selected_values:
-                #adding formated measurment_time into row
-                row = [value_object.measurment_time.strftime("%Y-%m-%d %H:%M:%S")]
-                #adding all values into row
-                [row.append(val.value) for val in value_object.get_values()]
-                #write row into csv file
-                writer.writerow(row)
+            #iterate over all selected devices
+            for device_pk in device_pk_list:
 
-            return response
+                #select values by values from form
+                selected_device = DeviceManager.get_instance().get_device(device_pk)
+                selected_values = DeviceValuesList.objects.filter(device=selected_device, measurment_time__lte=to_date, measurment_time__gte=from_date)
+
+                #if there is not values for device, iterator will jump to next one
+                if not selected_values:
+                    continue
+
+                #creating first row of csv file with titles
+                value_titles = ['time']
+                for titles in selected_values.first().get_values():
+                    value_titles.append(titles.value_title)
+
+                #write titles into csv file
+                writer.writerow(selected_device.get_values_into_csv())
+                writer.writerow(value_titles)
+
+                #write values into csv file
+                for value_object in selected_values:
+                    #adding formated measurment_time into row
+                    row = [value_object.measurment_time.strftime("%Y-%m-%d %H:%M:%S")]
+                    #adding all values into row
+                    [row.append(val.value) for val in value_object.get_values()]
+                    #write row into csv file
+                    writer.writerow(row)
+
+                #separator for better reading csv file
+                writer.writerow(" ")
+
+            #if there is no selected data, template will show notification
+            if len(response.content) > 0:
+                return response
+            else:
+                export_form = ExportForm()
+                return render(request, 'export.html', {'no_data_warning': '1', 'export_form':export_form})
 
 # ----------------------------------------------------------------------
 # COMMUNICATION SOLUTIONS

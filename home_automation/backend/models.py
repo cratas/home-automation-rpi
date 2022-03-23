@@ -52,6 +52,9 @@ class Device(PolymorphicModel):
     def get_last_communication_time(self):
         return DeviceValuesList.objects.filter(device=self).order_by('measurment_time').last()
 
+    def get_values_into_csv(self):
+        return [f'{self.identifier} {self.device_name} {self.room}']
+
 class PushDevice(Device):
     pass
 
