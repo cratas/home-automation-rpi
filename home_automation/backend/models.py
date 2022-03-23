@@ -12,7 +12,6 @@ from django.utils import timezone
 class Room(models.Model):
     name = models.CharField(max_length=10)
 
-
     def __str__(self):
         return f'{self.name}'
 
@@ -50,6 +49,9 @@ class Device(PolymorphicModel):
     def get_values(self):
         return DeviceValuesList.objects.filter(device=self)
 
+    def get_last_communication_time(self):
+        return DeviceValuesList.objects.filter(device=self).order_by('measurment_time').last()
+
 class PushDevice(Device):
     pass
 
@@ -72,7 +74,6 @@ class DeviceValuesList(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
     measurment_time = models.DateTimeField(default=timezone.now)
 
-
     def __str__(self):
         values = BaseValueObject.objects.filter(device_values=self)
         values_string = ''
@@ -84,15 +85,12 @@ class DeviceValuesList(models.Model):
     def get_values(self):
         return BaseValueObject.objects.filter(device_values=self)
 
-
-
 # ----------
 # VALUE OBJECT MODEL
 # ----------
 class BaseValueObject(PolymorphicModel):
     value_title = models.CharField(max_length=30)
     device_values = models.ForeignKey(DeviceValuesList, on_delete=models.CASCADE)
-
 
 class StringValueObject(BaseValueObject):
     value = models.CharField(max_length=30)

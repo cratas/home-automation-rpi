@@ -20,6 +20,8 @@ class ParametresParser(Parser):
         else:
             self.data = [ dict(x.split("=") for x in self.data.split("&")) ]
 
+        return self.data
+
 class CSVParser(Parser):
  
     def __init__(self, data, delimiter):
@@ -35,6 +37,8 @@ class CSVParser(Parser):
         headers=next(file_data)
         #creating dict from csv file
         self.data = [dict(zip(headers,i)) for i in file_data]
+
+        return self.data
 
 # --------------
 # SINGLETON Class for creating specific type of parser

@@ -3,7 +3,7 @@
 {% block base %}
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light ">
-        <div class="container">
+        <div class="container-fluid ">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
             </button>
@@ -68,11 +68,12 @@
                                    <tr class="info">
                                       <th>ID</th>
                                       <th>Název</th>
-                                      <th>Adresa pro datázání</th>
+                                      <th>Adresa senzoru</th>
                                       <th>Zdroj komunikace</th>
-                                      <th>Formát dat</th>
+                                      <th>Formát</th>
                                       <th>Typ</th>
                                       <th>Aktivní</th>
+                                      <th>Čas poslední komunikace</th>
                                       <th></th>
                                    </tr>
                                 </thead>
@@ -85,7 +86,7 @@
                                         <tr data-toggle="collapse"  class="accordion-toggle" style="background-color: #F29C9E;" data-target="#device{{device.id}}">
                                     {% endif %}
 
-                                      <td>{{device.identifier}}</td>
+                                      <td><span style="font-weight: bold;">{{device.identifier}}<span></td>
                                       <td>{{device.device_name}}</td>
                                         {% if not device.source_address %}
                                             <td></td>
@@ -106,17 +107,19 @@
                                         {% endif %}
                                       
                                         {% if not device.source_address %}
-                                            <td>PUSH</td>
+                                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
+                                            {% comment %} <td>PUSH</td> {% endcomment %}
                                         {% else %}
-                                            <td>PULL</td>
+                                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-right-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
                                         {% endif %}
 
                                         {% if device.is_active|lower == 'true' %}
-                                            <td><i class=" active-device fa-solid fa-circle-check"></i></td>
+                                            <td><i class="active-device fa-solid fa-circle-check"></i></td>
                                         {% else %}
                                             <td><i class="non-active-device fa-solid fa-circle-xmark"></i></td>
                                         {% endif %}
 
+                                        <td><span style="font-weight: bold;">{{device.get_last_communication_time.measurment_time|date:"Y-m-d H:i:s" }}</span></td>
                                         
                                         <td align="right">
                                             {% if not device.source_address %}

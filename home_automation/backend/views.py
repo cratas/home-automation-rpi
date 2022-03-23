@@ -13,6 +13,13 @@ from .helpers.parser import *
 from .helpers.managers import DeviceManager
 from .models import *
 
+#TODO  udelat kontrolu i u typu push
+#TODO  zkusit vyresit cashovani
+#TODO  zobrazovat posledni aktualizaci senzoru
+#TODO  zmenit ikonku push/pull
+#TODO  vyresit interval dotazovani pro kazdy senzor
+#TODO  export vsech dat, ci po senzorech
+
 #view function returning all rooms in house
 def home(request):
     rooms = Room.objects.all()
@@ -149,7 +156,6 @@ class NetworkPullCommunication(PullCommunication):
         try:
             response = requests.get(source_address,timeout=3)
             response.raise_for_status()
-
             return response.text
         except:
             return None
@@ -221,7 +227,6 @@ class PushCommunication():
         self.retreived_data = None
 
     def process_data(self):
-
         #getting device id from incoming data
         device_identifier = self.retreived_data[0]["id"]
 
@@ -286,9 +291,7 @@ class NetworkPushCommunication(PushCommunication, View):
  
         #retrieved data are already represented as dic
         parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data)
-        parser.parse_into_dict()
-
-        self.retreived_data = parser.data
+        self.retreived_data = parser.parse_into_dict()
 
         #process data
         if self.process_data() is True:
@@ -296,8 +299,6 @@ class NetworkPushCommunication(PushCommunication, View):
         else:
             return HttpResponse("Data NOT inserted into database")
 
-        return HttpResponse("Data NOT inserted into database")
- 
     def post(self, request, *args, **kwargs):
         #specific format of incoming data
         self.parser_type = kwargs['name']
@@ -311,18 +312,13 @@ class NetworkPushCommunication(PushCommunication, View):
  
         #parsing retrieved data via parser
         parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, self.delimiter)
-        parser.parse_into_dict()
- 
-        self.retreived_data = parser.data
+        self.retreived_data = parser.parse_into_dict()
 
         #process data
         if self.process_data() is True:
             return HttpResponse("Data inserted into database")
         else:
             return HttpResponse("Data NOT inserted into database")
-
-        return HttpResponse("Data NOT inserted into database")
-
 
 class SerialBusPushCommunication(PushCommunication):
 
