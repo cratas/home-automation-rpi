@@ -39,6 +39,8 @@ class Device(PolymorphicModel):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
     error_count = models.IntegerField(default=0)
     has_error = models.BooleanField(default=False)
+    communication_interval = models.IntegerField(default=1) #one interval unit is 1 minute
+    communication_counter = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.identifier}, {self.device_name}, {self.room.name}'
