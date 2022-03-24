@@ -31,11 +31,11 @@ class RoomForm(forms.ModelForm):
 class PushDeviceForm(forms.ModelForm):
     class Meta:
         model = PushDevice
-        fields = ['device_name', 'identifier', 'is_active', 'room', 'has_error', 'communication_interval']
+        fields = ['device_name', 'identifier', 'is_active', 'room', 'has_error', 'communication_interval', 'communication_counter']
 
 
 class PullDeviceForm(forms.ModelForm):
     class Meta:
         model = PullDevice
         fields = ['device_name', 'identifier', 'is_active', 'room'
-                , 'source_address','source_type','format','has_error','communication_interval']
+                , 'source_address','source_type','format', 'delimiter', 'has_error','communication_interval', 'communication_counter']

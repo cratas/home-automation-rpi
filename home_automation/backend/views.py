@@ -16,13 +16,14 @@ from .models import *
 #TODO (SOLVED) zobrazovat posledni aktualizaci senzoru
 #TODO (SOLVED) export vsech dat, ci po senzorech
 #TODO (SOLVED) vyresit interval dotazovani pro kazdy senzor
-#TODO udelat kontrolu i u typu push
+#TODO (SOLVED) udelat kontrolu i u typu push
 #TODO zmenit "hardcoded" hlavicky u data a casu
 #TODO zkusit vyresit cashovani
+#TODO zacit pracovat na main frontendu
 
 
-def push_check():
-    print("sdfsdf")
+# def push_check():
+#     print("sdfsdf")
 
 
 #view function returning all rooms in house
@@ -149,7 +150,34 @@ class Export(View):
 # ----------------------------------------------------------------------
 def testing_function(request):
 
-    # NetworkPullCommunication.process_data()
+    for device in DeviceManager.get_instance().get_active_push_network_devices():
+        #increment counter
+        device.communication_counter = device.communication_counter + 1
+        device.save()
+
+        print(f'KONTROLA ZARIZENI {device.identifier}, INTERVAL: {device.communication_interval}, COUNTER {device.communication_counter}, LAST COMMUNICATION: {device.get_last_communication_time()}')
+        
+
+        if device.communication_counter == device.communication_interval * 3:
+            #reset counter back to 0
+            device.communication_counter = 0
+            device.save()
+
+            #getting last communication time from current device
+            last_communication_time = device.get_last_communication_time() 
+
+            #if there are no measured data, time diff will be None value for check below
+            if last_communication_time is None:
+                diff_in_minutes = None
+            else:
+                #count diff in minutes between timestamp and last communication
+                diff_in_minutes = (datetime.now(timezone.utc) - last_communication_time).total_seconds() / 60.0
+
+            #if the time difference is greater than 3 intervals (no data from device for 3 times) or there are not incoming values at all, set device error
+            if diff_in_minutes > device.communication_interval * 3 or diff_in_minutes is None:
+                # print("ZARIZENI NEODPOVIDA")
+                device.handle_error()
+
 
     return HttpResponse("sdfsdf")
 
@@ -182,8 +210,6 @@ class NetworkPullCommunication(PullCommunication):
     def process_data():
         for device in DeviceManager.get_instance().get_active_pull_network_devices():
 
-            print(f'{device.communication_counter} - {device.communication_interval}')
-
             #increment communication counter by 1
             device.communication_counter = device.communication_counter + 1
             device.save()
@@ -208,7 +234,7 @@ class NetworkPullCommunication(PullCommunication):
                 print(f'Cannot retreive {device.device_name}:{device.identifier} data from {device.source_address}')
                 continue
 
-            parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, ',')
+            parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, device.delimiter)
             parser.parse_into_dict()
 
              #iterate over all dicts in dict list
@@ -245,7 +271,6 @@ class SerialBusPullCommunication(PullCommunication):
 class PushCommunication():
     def __init__(self):
         self.parser_type='parametres'
-        self.delimiter=';'
         self.retreived_data = None
 
     def process_data(self):
@@ -324,7 +349,8 @@ class NetworkPushCommunication(PushCommunication, View):
     def post(self, request, *args, **kwargs):
         #specific format of incoming data
         self.parser_type = kwargs['name']
-        self.delimiter = kwargs['delimiter']
+        #specific delimiter for csv files
+        delimiter = kwargs['delimiter']
         #getting data via post request
         incoming_data = request.body.decode('utf-8')
  
@@ -333,7 +359,7 @@ class NetworkPushCommunication(PushCommunication, View):
             return HttpResponse("Data NOT inserted into database")
  
         #parsing retrieved data via parser
-        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, self.delimiter)
+        parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, delimiter)
         self.retreived_data = parser.parse_into_dict()
 
         #process data
