@@ -1,8 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
-from datetime import datetime
+from datetime import datetime, timezone
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, Http404
-from django.core.mail import send_mail
 from abc import abstractstaticmethod
 from django.views import View
 import requests
@@ -16,9 +15,15 @@ from .models import *
 #TODO (SOLVED) zmenit ikonku push/pull 
 #TODO (SOLVED) zobrazovat posledni aktualizaci senzoru
 #TODO (SOLVED) export vsech dat, ci po senzorech
-#TODO vyresit interval dotazovani pro kazdy senzor
+#TODO (SOLVED) vyresit interval dotazovani pro kazdy senzor
 #TODO udelat kontrolu i u typu push
+#TODO zmenit "hardcoded" hlavicky u data a casu
 #TODO zkusit vyresit cashovani
+
+
+def push_check():
+    print("sdfsdf")
+
 
 #view function returning all rooms in house
 def home(request):
@@ -52,11 +57,10 @@ def add_device(request, device_type):
 
     return render(request, 'devices.html', {'device_form':device_form, 'device_type': device_type})
     
-
-
 #view function for updating devices
 def update_device(request, device_id, device_type):
     device = Device.objects.get(pk=device_id)
+    device_communication_interval = device.communication_interval
 
     #checking type of device for rendering right form
     if device_type == 'pull':
@@ -66,7 +70,13 @@ def update_device(request, device_id, device_type):
 
     #if form is valid, update device
     if device_form.is_valid():
+        # if there was changed communication interval, communication counter need to be reseted
+        if device_communication_interval != device_form.cleaned_data['communication_interval']:
+            device.communication_counter = 0
+            device.save()
+
         device_form.save()
+
         return redirect('home')
 
     return render(request, 'devicesupdate.html', {'device_form':device_form, 'device':device})
@@ -138,12 +148,8 @@ class Export(View):
 # COMMUNICATION SOLUTIONS
 # ----------------------------------------------------------------------
 def testing_function(request):
-    # print(DeviceManager.get_instance().get_active_pull_netowrk_devices())
+
     # NetworkPullCommunication.process_data()
-    device = Device.objects.all().first()
-    # device.error_count = 1
-    # device.save()
-    print(device.error_count)
 
     return HttpResponse("sdfsdf")
 
@@ -175,6 +181,20 @@ class NetworkPullCommunication(PullCommunication):
 
     def process_data():
         for device in DeviceManager.get_instance().get_active_pull_network_devices():
+
+            print(f'{device.communication_counter} - {device.communication_interval}')
+
+            #increment communication counter by 1
+            device.communication_counter = device.communication_counter + 1
+            device.save()
+
+            #if device reached communication interval, it will communicate with sensor, otherwise will be skipped
+            if device.communication_counter == device.communication_interval:
+                device.communication_counter = 0
+                device.save()
+            else:
+                continue
+
             retrieved_data = NetworkPullCommunication.get_data(device.source_address)
 
             #if there is no answer from device for the third time, system will notificate user
@@ -183,18 +203,7 @@ class NetworkPullCommunication(PullCommunication):
                 device.save()
 
                 if(device.error_count == 3):
-                    device.has_error=True
-                    device.is_active=False
-                    device.error_count=0
-                    device.save()
-                    #sending email to user, contact informations has to be set
-                    send_mail(
-                        'Device error',
-                        f'Communication with id: {device.identifier} failed.',
-                        'from@example.com', 
-                        ['to@example.com'], #list of users
-                        fail_silently=False,
-                    )
+                    device.handle_error()
                     
                 print(f'Cannot retreive {device.device_name}:{device.identifier} data from {device.source_address}')
                 continue

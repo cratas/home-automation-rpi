@@ -57,6 +57,14 @@
             <td>Místnost</td>
             <td style="text-align: right;">{{ device_form.room }}</td>
         </tr>
+        <tr>
+            <td>Senzor hlásí chybu</td>
+            <td style="text-align: right;">{{ device_form.has_error }}</td>
+        </tr>
+        <tr>
+            <td>Interval komunikace (v minutách)</td>
+            <td style="text-align: right;">{{ device_form.communication_interval }}</td>
+        </tr>
 
         {% if device.source_address %}
             <tr>
@@ -70,10 +78,6 @@
             <tr>
                 <td>Formát přenášených dat</td>
                 <td style="text-align: right;">{{ device_form.format }}</td>
-            </tr>
-            <tr>
-                <td>Senzor hlásí chybu</td>
-                <td style="text-align: right;">{{ device_form.has_error }}</td>
             </tr>
         {% endif %}
         </table>

@@ -1,10 +1,9 @@
-from email.policy import default
-from random import choices
-from this import d
 from django.db import models
 from polymorphic.models import PolymorphicModel
 from .helpers.parser import *
 from django.utils import timezone
+from django.core.mail import send_mail
+
 
 # ----------
 # ROOM MODEL
@@ -52,10 +51,30 @@ class Device(PolymorphicModel):
         return DeviceValuesList.objects.filter(device=self)
 
     def get_last_communication_time(self):
-        return DeviceValuesList.objects.filter(device=self).order_by('measurment_time').last()
+        #getting count of values for condition below
+        values_count = DeviceValuesList.objects.filter(device=self).order_by('measurment_time').count()
 
+        #if there is no data None will be returned
+        if values_count > 0:
+            return DeviceValuesList.objects.filter(device=self).order_by('measurment_time').last().measurment_time
+        return None
+        
     def get_values_into_csv(self):
         return [f'{self.identifier} {self.device_name} {self.room}']
+
+    def handle_error(self):
+        self.has_error=True
+        self.is_active=False
+        self.error_count=0
+        self.save()
+                #sending email to user, contact informations has to be set
+        send_mail(
+            'Device error',
+            f'Communication with id: {self.identifier} failed.',
+            'from@example.com', 
+            ['to@example.com'], #list of users
+            fail_silently=False,
+        )
 
 class PushDevice(Device):
     pass
