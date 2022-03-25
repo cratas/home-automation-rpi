@@ -29,13 +29,26 @@ class RoomForm(forms.ModelForm):
         fields = ['name']
 
 class PushDeviceForm(forms.ModelForm):
+    time_title = forms.CharField(required=False)
+    datetime_title = forms.CharField(required=False)
+    date_title = forms.CharField(required=False)
+    datetime_format = forms.CharField(required=False)
+    communication_counter = forms.IntegerField(required=False)
+
     class Meta:
         model = PushDevice
-        fields = ['device_name', 'identifier', 'is_active', 'room', 'has_error', 'communication_interval', 'communication_counter']
+        fields = ['device_name', 'identifier', 'is_active', 'room', 'has_error', 'communication_interval','datetime_title', 'date_title', 'time_title', 'datetime_format']
 
 
 class PullDeviceForm(forms.ModelForm):
+    time_title = forms.CharField(required=False)
+    datetime_title = forms.CharField(required=False)
+    date_title = forms.CharField(required=False)
+    datetime_format = forms.CharField(required=False)
+    communication_counter = forms.IntegerField(required=False)
+    delimiter = forms.CharField(required=False)
+
     class Meta:
         model = PullDevice
         fields = ['device_name', 'identifier', 'is_active', 'room'
-                , 'source_address','source_type','format', 'delimiter', 'has_error','communication_interval', 'communication_counter']
+                , 'source_address','source_type','format', 'delimiter', 'has_error','communication_interval', 'datetime_title', 'date_title', 'time_title','datetime_format']

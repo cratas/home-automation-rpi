@@ -36,24 +36,24 @@
     </div>
   </nav>
 
-<h1 class="mt-5 mb-5">Export dat</h1>
+<h2 class="mt-5 mb-5">Export dat</h2>
 {% if no_data_warning %}
 <p style="color: red;">Pro vybraný senzor neexistují naměřená data ve vybraném časovém rozmezí.</p>
 {% endif %}
 <form action="{% url 'export' %}" method="post">{% csrf_token %}
        <table class="table">
          <tr>
-            <td>Od <span style="color: gray; margin-left: 1rem;">(03/02/2022, 3:32 AM)</span></td>
+            <td><span class="font-weight-bold">Od</span><span style="color: red;"> *</span></span></td>
           <td style="text-align: right; ">{{ export_form.from_date }}</td>
           <td style="text-align: right; ">{{ export_form.from_time }}</td>
 
         </tr>
          <tr>
-          <td>Do <span style="color: gray; margin-left: 1rem;">(05/02/2022, 08:22 PM)</span></td>
+          <td><span class="font-weight-bold">Do</span><span style="color: red;"> *</span></td>
           <td style="text-align: right; ">{{ export_form.to_date }}</td>
         </tr>
          <tr>
-             <td>Senzory</td>
+             <td><span class="font-weight-bold">Senzory<span style="color: red;"> *</span></td>
              <td style="text-align: right;">{{ export_form.device }}</td>
          </tr>
       </table>

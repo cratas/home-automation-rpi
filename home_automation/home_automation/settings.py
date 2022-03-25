@@ -88,9 +88,8 @@ DATABASES = {
 
 #periodically
 CRONJOBS = [
-    ('*/1 * * * *', 'backend.cron.get_network_data')
+    ('*/1 * * * *', 'backend.cron.communicate')
 ]
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

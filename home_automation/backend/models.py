@@ -40,6 +40,10 @@ class Device(PolymorphicModel):
     has_error = models.BooleanField(default=False)
     communication_interval = models.IntegerField(default=1) #one interval unit is 1 minute
     communication_counter = models.IntegerField(default=0)
+    datetime_title = models.CharField(max_length=30, null=True)
+    date_title = models.CharField(max_length=20, null=True)
+    time_title = models.CharField(max_length=20, null=True)
+    datetime_format = models.CharField(max_length=30, default="%Y-%m-%d %H:%M:%S")
 
     def __str__(self):
         return f'{self.identifier}, {self.device_name}, {self.room.name}'

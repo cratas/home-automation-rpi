@@ -38,52 +38,72 @@
 
 
   {% if device_type|lower == 'pull' %}
-    <h2 class="mt-5 mb-5">Přidat nový Pull senzor</h1>
+    <h2 class="mt-5 mb-5">Přidat nový Pull senzor</h2>
   {% else %}
-    <h2 class="mt-5 mb-5">Přidat nový Push senzor</h1>
+    <h2 class="mt-5 mb-5">Přidat nový Push senzor</h2>
   {% endif %}
 
     <form action="" method="post">{% csrf_token %}
       <table class="table">
         <tr>
-            <td>Název senzoru<span style="color: red;"> *</span></td>
+            <td class="font-weight-bold">Název senzoru<span style="color: red;"> *</span></td>
             <td style="text-align: right; ">{{ device_form.device_name }}</td>
        </tr>
         <tr>
-            <td>ID<span style="color: red;"> *</span></td>
+            <td class="font-weight-bold">ID<span style="color: red;"> *</span></td>
             <td style="text-align: right; ">{{ device_form.identifier }}</td>
         </tr>
         <tr>
-            <td>Aktivní</td>
+            <td class="font-weight-bold">Aktivní</td>
             <td style="text-align: right;">{{ device_form.is_active }}</td>
         </tr>
         <tr>
-            <td>Místnost<span style="color: red;"> *</span></td>
+            <td class="font-weight-bold">Místnost<span style="color: red;"> *</span></td>
             <td style="text-align: right;">{{ device_form.room }}</td>
         </tr>
         <tr>
-          <td>Interval komunikace (v minutách)<span style="color: red;"> *</span></td>
+          <td><span class="font-weight-bold">Interval komunikace</span> (v minutách)<span style="color: red;"> *</span></td>
           <td style="text-align: right;">{{ device_form.communication_interval }}</td>
       </tr>
 
         {% if device_type|lower == 'pull' %}
             <tr>
-                <td>Adresa senzoru<span style="color: red;"> *</span></td>
+                <td class="font-weight-bold">Adresa senzoru<span style="color: red;"> *</span></td>
                 <td style="text-align: right;">{{ device_form.source_address }}</td>
             </tr>
             <tr>
-                <td>Typ komunikace<span style="color: red;"> *</span></td>
+                <td class="font-weight-bold">Typ komunikace<span style="color: red;"> *</span></td>
                 <td style="text-align: right;">{{ device_form.source_type }}</td>
             </tr>
             <tr>
-                <td>Formát přenášených dat<span style="color: red;"> *</span></td>
+                <td><span class="font-weight-bold">Formát přenášených dat</span><span style="color: red;"> *</span></td>
                 <td style="text-align: right;">{{ device_form.format }}</td>
             </tr>
             <tr>
-              <td>Oddělovač v CSV</td>
+              <td><span class="font-weight-bold">Oddělovač v CSV</span> (pouze při formátu CSV)</td>
               <td style="text-align: right;">{{ device_form.delimiter }}</td>
           </tr>
         {% endif %}
+            <tr>
+              <td><span style="color: #f00; font-weight: bold">Obsahujou-li data senzoru údaj o čase, zadejte klíč hodnoty</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><span class="font-weight-bold">Datum a čas</span> (hodnota v jednom záznamu)<span style="color: red;"></td>
+              <td style="text-align: right;">{{ device_form.datetime_title }}</td>
+            </tr>
+            <tr>
+              <td><span class="font-weight-bold">Datum</span> (hodnota ve dvou záznamech)</td>
+              <td style="text-align: right;">{{ device_form.date_title }}</td>
+            </tr>
+            <tr>
+              <td><span class="font-weight-bold">Čas</span> (hodnota ve dvou záznamech)</td>
+              <td style="text-align: right;">{{ device_form.time_title }}</td>
+            </tr>
+            <tr>
+              <td><span class="font-weight-bold">Formát</span> ("%Y-%m-%d %H:%M:%S")</td>
+              <td style="text-align: right;">{{ device_form.datetime_format }}</td>
+            </tr>
         </table>
 
         <hr>

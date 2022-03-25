@@ -5,17 +5,13 @@ from .views import NetworkPullCommunication
 from .helpers.managers import DeviceManager
 from datetime import datetime, timezone
 
-
-def get_network_data():
+def communicate():
     NetworkPullCommunication.process_data()
  
     for device in DeviceManager.get_instance().get_active_push_network_devices():
             #increment counter
             device.communication_counter = device.communication_counter + 1
             device.save()
-
-            print(f'KONTROLA ZARIZENI {device.identifier}, INTERVAL: {device.communication_interval}, COUNTER {device.communication_counter}, LAST COMMUNICATION: {device.get_last_communication_time()}')
-            
 
             if device.communication_counter == device.communication_interval * 3:
                 #reset counter back to 0

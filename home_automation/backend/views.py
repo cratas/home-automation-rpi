@@ -17,9 +17,16 @@ from .models import *
 #TODO (SOLVED) export vsech dat, ci po senzorech
 #TODO (SOLVED) vyresit interval dotazovani pro kazdy senzor
 #TODO (SOLVED) udelat kontrolu i u typu push
-#TODO zmenit "hardcoded" hlavicky u data a casu
+#TODO (SOLVED) zmenit "hardcoded" hlavicky u data a casu
 #TODO zkusit vyresit cashovani
 #TODO zacit pracovat na main frontendu
+
+#poznamky teoreticka
+#-------------------
+#komunikace se senzory, pull-crontab, push-views, popsat vsechny problemy okolo
+#navrh struktury tabulek, vse okolo orm v djangu atd
+#popsat oop kod, navrhove vzory, oduvodnnit
+#neco k server-side frontendu
 
 
 # def push_check():
@@ -38,7 +45,7 @@ def add_rooms(request):
     #if form is valid, save new room into database
     if room_form.is_valid():
         room_form.save()
-        return redirect('add_rooms') 
+        return redirect('home') 
 
     return render(request, 'rooms.html', {'room_form':room_form})
 
@@ -55,6 +62,8 @@ def add_device(request, device_type):
     if device_form.is_valid():
         device_form.save()
         return redirect('home')
+    else:
+        print(device_form.errors.as_data()) # here you print errors to terminal
 
     return render(request, 'devices.html', {'device_form':device_form, 'device_type': device_type})
     
@@ -279,13 +288,16 @@ class PushCommunication():
 
         #if device with incoming id does not exist, method will return False
         try:
-            device = DeviceManager.get_instance().get_active_push_network_devices().get(identifier=device_identifier)
+            device = DeviceManager.get_instance().get_push_devices().get(identifier=device_identifier)
         except ObjectDoesNotExist:
             return False
+
 
         #iterate over all dicts in dict list
         for dict_object in self.retreived_data:
             values_list = DeviceValuesList.objects.create(device=device)
+
+
 
             #variable for creating datetime from two columns
             datetime_str = ""
@@ -295,25 +307,27 @@ class PushCommunication():
                 #ignore values with key id
                 if key == 'id':
                     continue
-
+                
                 #checking if mesurment time is part of data, if no, default time is set to timestamp
-                if key == 'Naposledy aktualizováno':
-                    datetime_str = value
-                    datetime_object = datetime.strptime(datetime_str, "%Y/%m/%d %H:%M:%S")
-                    values_list.measurment_time = datetime_object
-                    values_list.save()
-                    continue
+                if device.datetime_title is not None:
+                    if key == device.datetime_title:
+                        datetime_str = value
+                        datetime_object = datetime.strptime(datetime_str, device.datetime_format)
+                        values_list.measurment_time = datetime_object
+                        values_list.save()
+                        continue
 
-                if key == "Datum":
-                    datetime_str = value
-                    continue
+                if device.date_title is not None and device.time_title is not None:
+                    if key == device.date_title:
+                        datetime_str = value
+                        continue
                     
-                if key == "Čas":
-                    datetime_str = datetime_str + ' ' + value
-                    datetime_object = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-                    values_list.measurment_time = datetime_object
-                    values_list.save()
-                    continue
+                    if key == device.time_title:
+                        datetime_str = datetime_str + ' ' + value
+                        datetime_object = datetime.strptime(datetime_str, device.datetime_format)
+                        values_list.measurment_time = datetime_object
+                        values_list.save()
+                        continue
 
                 #convert to correct float format
                 if "," in value:
