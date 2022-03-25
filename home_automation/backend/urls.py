@@ -9,11 +9,12 @@ urlpatterns = [
     path('update_device/<device_id>/<device_type>', update_device, name="update-device"),
     path('export/', Export.as_view(), name="export"),
     #--------
-    # URLS for communication with devices
+    # URLS for PUSH communication with devices
     #--------
-    #for data insides URL parametres
+    #for data insides URL parametres (GET)
     path("push/", NetworkPushCommunication.as_view()),
-    #for data inside http (CSV, or PARAMETRES)
+    #for data inside http, name can be csv/parametres and delimiter ;/,/& (POST)
     path("push/<name>/<delimiter>/", NetworkPushCommunication.as_view(), name="name"),
+    
     path("test/", testing_function),
 ]

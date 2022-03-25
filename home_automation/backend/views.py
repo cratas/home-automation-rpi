@@ -18,6 +18,7 @@ from .models import *
 #TODO (SOLVED) vyresit interval dotazovani pro kazdy senzor
 #TODO (SOLVED) udelat kontrolu i u typu push
 #TODO (SOLVED) zmenit "hardcoded" hlavicky u data a casu
+#TODO (SOLVED) logiku ukladani jsem dal do model classy
 #TODO zkusit vyresit cashovani
 #TODO zacit pracovat na main frontendu
 
@@ -154,41 +155,14 @@ class Export(View):
                 export_form = ExportForm()
                 return render(request, 'export.html', {'no_data_warning': '1', 'export_form':export_form})
 
+
+def testing_function(request):
+
+    return HttpResponse("tested")
+
 # ----------------------------------------------------------------------
 # COMMUNICATION SOLUTIONS
 # ----------------------------------------------------------------------
-def testing_function(request):
-
-    for device in DeviceManager.get_instance().get_active_push_network_devices():
-        #increment counter
-        device.communication_counter = device.communication_counter + 1
-        device.save()
-
-        print(f'KONTROLA ZARIZENI {device.identifier}, INTERVAL: {device.communication_interval}, COUNTER {device.communication_counter}, LAST COMMUNICATION: {device.get_last_communication_time()}')
-        
-
-        if device.communication_counter == device.communication_interval * 3:
-            #reset counter back to 0
-            device.communication_counter = 0
-            device.save()
-
-            #getting last communication time from current device
-            last_communication_time = device.get_last_communication_time() 
-
-            #if there are no measured data, time diff will be None value for check below
-            if last_communication_time is None:
-                diff_in_minutes = None
-            else:
-                #count diff in minutes between timestamp and last communication
-                diff_in_minutes = (datetime.now(timezone.utc) - last_communication_time).total_seconds() / 60.0
-
-            #if the time difference is greater than 3 intervals (no data from device for 3 times) or there are not incoming values at all, set device error
-            if diff_in_minutes > device.communication_interval * 3 or diff_in_minutes is None:
-                # print("ZARIZENI NEODPOVIDA")
-                device.handle_error()
-
-
-    return HttpResponse("sdfsdf")
 
 # --------------
 # PULL COMMUNICATION CLASSES
@@ -244,26 +218,8 @@ class NetworkPullCommunication(PullCommunication):
                 continue
 
             parser = ParserFactory.get_instance().create_parser(device.format, retrieved_data, device.delimiter)
-            parser.parse_into_dict()
-
-             #iterate over all dicts in dict list
-            for dict_object in parser.data:
-                values_list = DeviceValuesList.objects.create(device=device)
-
-                #iterate over every dict inside list
-                for key, value in dict_object.items():
-                    if key == 'id':
-                        continue
-
-                    #convert to correct float format
-                    if "," in value:
-                        value = value.replace(',','.')
-        
-                    #creating correct type of value
-                    if is_number(value):
-                        NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
-                    else:
-                        StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+            device.save_data(parser.parse_into_dict())
+            
 
 
 class SerialBusPullCommunication(PullCommunication):
@@ -288,58 +244,11 @@ class PushCommunication():
 
         #if device with incoming id does not exist, method will return False
         try:
-            device = DeviceManager.get_instance().get_push_devices().get(identifier=device_identifier)
+            device = DeviceManager.get_instance().get_active_push_network_devices().get(identifier=device_identifier)
+            device.save_data(self.retreived_data)
+            return True
         except ObjectDoesNotExist:
             return False
-
-
-        #iterate over all dicts in dict list
-        for dict_object in self.retreived_data:
-            values_list = DeviceValuesList.objects.create(device=device)
-
-
-
-            #variable for creating datetime from two columns
-            datetime_str = ""
-
-            #iterate over every dict inside list
-            for key, value in dict_object.items():
-                #ignore values with key id
-                if key == 'id':
-                    continue
-                
-                #checking if mesurment time is part of data, if no, default time is set to timestamp
-                if device.datetime_title is not None:
-                    if key == device.datetime_title:
-                        datetime_str = value
-                        datetime_object = datetime.strptime(datetime_str, device.datetime_format)
-                        values_list.measurment_time = datetime_object
-                        values_list.save()
-                        continue
-
-                if device.date_title is not None and device.time_title is not None:
-                    if key == device.date_title:
-                        datetime_str = value
-                        continue
-                    
-                    if key == device.time_title:
-                        datetime_str = datetime_str + ' ' + value
-                        datetime_object = datetime.strptime(datetime_str, device.datetime_format)
-                        values_list.measurment_time = datetime_object
-                        values_list.save()
-                        continue
-
-                #convert to correct float format
-                if "," in value:
-                    value = value.replace(',','.')
-    
-                #creating correct type of value
-                if is_number(value):
-                    NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
-                else:
-                    StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
- 
-        return True
 
 class NetworkPushCommunication(PushCommunication, View):
     def get(self, request):
@@ -375,7 +284,7 @@ class NetworkPushCommunication(PushCommunication, View):
         #parsing retrieved data via parser
         parser = ParserFactory.get_instance().create_parser(self.parser_type, incoming_data, delimiter)
         self.retreived_data = parser.parse_into_dict()
-
+        
         #process data
         if self.process_data() is True:
             return HttpResponse("Data inserted into database")

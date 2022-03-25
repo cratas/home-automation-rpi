@@ -3,6 +3,7 @@ from polymorphic.models import PolymorphicModel
 from .helpers.parser import *
 from django.utils import timezone
 from django.core.mail import send_mail
+from datetime import datetime
 
 
 # ----------
@@ -79,6 +80,51 @@ class Device(PolymorphicModel):
             ['to@example.com'], #list of users
             fail_silently=False,
         )
+
+    def save_data(self, data):
+        #iterate over all dicts in dict list
+        for dict_object in data:
+            values_list = DeviceValuesList.objects.create(device=self)
+
+            #variable for creating datetime from two columns
+            datetime_str = ""
+
+            #iterate over every dict inside list
+            for key, value in dict_object.items():
+                #ignore values with key id
+                if key == 'id':
+                    continue
+                
+                #checking if mesurment time is part of data, if no, default time is set to timestamp
+                if self.datetime_title is not None:
+                    if key == self.datetime_title:
+                        datetime_str = value
+                        datetime_object = self.strptime(datetime_str, self.datetime_format)
+                        values_list.measurment_time = datetime_object
+                        values_list.save()
+                        continue
+
+                if self.date_title is not None and self.time_title is not None:
+                    if key == self.date_title:
+                        datetime_str = value
+                        continue
+                    
+                    if key == self.time_title:
+                        datetime_str = datetime_str + ' ' + value
+                        datetime_object = datetime.strptime(datetime_str, self.datetime_format)
+                        values_list.measurment_time = datetime_object
+                        values_list.save()
+                        continue
+
+                #convert to correct float format
+                if "," in value:
+                    value = value.replace(',','.')
+    
+                #creating correct type of value
+                if is_number(value):
+                    NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                else:
+                    StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
 
 class PushDevice(Device):
     pass
