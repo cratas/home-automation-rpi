@@ -55,9 +55,13 @@
                  </thead>
                  <tbody>
                     {% for room in rooms %}
-                    <tr data-toggle="collapse" data-target="#room{{room.id}}" class="accordion-toggle">
-                       <td><span style="font-weight: bold;">{{room.name}}<span></td>
-                       <td><span class="active-device">{{ room.get_active_dev_count }}</span></td>
+                    {% if room.any_device_has_error > 0 %}
+                        <tr data-toggle="collapse" data-target="#room{{room.id}}" class="accordion-toggle" style="background-color: #F29C9E;">
+                    {% else %}
+                        <tr data-toggle="collapse" data-target="#room{{room.id}}" class="accordion-toggle">
+                    {% endif %}
+                        <td><span style="font-weight: bold;">{{room.name}}<span></td>
+                        <td><span class="active-device">{{ room.get_active_dev_count }}</span></td>
                         <td><span class="non-active-device">{{ room.get_non_active_dev_count }}</span></td>
                     </tr>
                     <tr>

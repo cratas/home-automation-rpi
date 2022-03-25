@@ -26,6 +26,9 @@ class Room(models.Model):
 
     def get_devices(self):
         return Device.objects.filter(room=self)
+
+    def any_device_has_error(self):
+        return Device.objects.filter(room=self, has_error=True).count()
 # ----------
 # DEVICE MODEL
 # ----------
