@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_crontab',
     'backend.apps.BackendConfig',
+    'api.apps.ApiConfig',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -53,7 +55,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+#allow communication with react
+REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
+    'rest_framework.permissions.AllowAny'
+]}
+#allow communication with react
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'home_automation.urls'
 
@@ -115,8 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Europe/Prague'
 USE_I18N = True
 
 USE_TZ = True

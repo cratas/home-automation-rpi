@@ -9,6 +9,7 @@ import requests
 from .forms import PullDeviceForm, PushDeviceForm, ExportForm, RoomForm
 
 from .helpers.parser import *
+from .helpers.cash import Cash
 from .helpers.managers import DeviceManager
 from .models import *
 
@@ -157,6 +158,41 @@ class Export(View):
 
 
 def testing_function(request):
+    c = Cash.get_instance()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+    c.add(1)
+    c.display()
+
+
 
     return HttpResponse("tested")
 

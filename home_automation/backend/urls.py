@@ -8,6 +8,7 @@ urlpatterns = [
     path('add_device/<device_type>', add_device, name="add_device"),
     path('update_device/<device_id>/<device_type>', update_device, name="update-device"),
     path('export/', Export.as_view(), name="export"),
+    
     #--------
     # URLS for PUSH communication with devices
     #--------

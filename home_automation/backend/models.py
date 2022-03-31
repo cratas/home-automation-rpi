@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from datetime import datetime
 
-
+from .helpers.cash import Cash
 # ----------
 # ROOM MODEL
 # ----------
@@ -58,6 +58,9 @@ class Device(PolymorphicModel):
     def get_values(self):
         return DeviceValuesList.objects.filter(device=self)
 
+    def get_last_value(self):
+        return DeviceValuesList.objects.filter(device=self).last()
+
     def get_last_communication_time(self):
         #getting count of values for condition below
         values_count = DeviceValuesList.objects.filter(device=self).order_by('measurment_time').count()
@@ -87,7 +90,8 @@ class Device(PolymorphicModel):
     def save_data(self, data):
         #iterate over all dicts in dict list
         for dict_object in data:
-            values_list = DeviceValuesList.objects.create(device=self)
+            # values_list = DeviceValuesList.objects.create(device=self)
+            values_list = DeviceValuesList(device=self)
 
             #variable for creating datetime from two columns
             datetime_str = ""
@@ -125,9 +129,13 @@ class Device(PolymorphicModel):
     
                 #creating correct type of value
                 if is_number(value):
-                    NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                    # NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                    result = NumericValueObject(value_title=key, value=value, device_values=values_list)
                 else:
-                    StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                    # StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
+                    result = StringValueObject(value_title=key, value=value, device_values=values_list)
+
+                Cash.get_instance().add(result)
 
 class PushDevice(Device):
     pass
@@ -169,6 +177,8 @@ class DeviceValuesList(models.Model):
 class BaseValueObject(PolymorphicModel):
     value_title = models.CharField(max_length=30)
     device_values = models.ForeignKey(DeviceValuesList, on_delete=models.CASCADE)
+
+
 
 class StringValueObject(BaseValueObject):
     value = models.CharField(max_length=30)
