@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from backend.models import *
 from django.http import HttpResponse
 from django.views import View
+from django.db.models import Q
+from collections import defaultdict
 
 # Create your views here.
 class DashboardView(APIView):
@@ -82,7 +84,11 @@ class ExportView(APIView):
         devices = []
 
         for device in Device.objects.all():
-            device_dict = {'id': device.identifier , 'name': f'{device.device_name}, {device.room.name}'}
+            if device.room is not None:
+                device_dict = {'id': device.identifier , 'name': f'{device.device_name}, {device.room.name}'}
+            else:
+                device_dict = {'id': device.identifier , 'name': f'{device.device_name}, Celý dům'}
+
             devices.append(device_dict)
 
 
@@ -134,14 +140,37 @@ class StatisticView(APIView):
 
     def get(self, request):
         
-        room = Room.objects.filter(name='Chodba')[0]
-        device = room.get_devices().filter(device_name="Spotřeba voda")[0]
-        
+        test_dict = {}
+        for device in Device.objects.filter(room=None):
+            for values_list in device.get_values():
+                values_dict = {}
+
+                for v in values_list.get_values().filter(Q(value_title="spotřeba") | Q(value_title="vodoměr")):
+                    if not values_list.measurment_time.strftime("%m-%d-%Y") in test_dict.keys():
+                        test_dict[values_list.measurment_time.strftime("%m-%d-%Y")] = []
+
+                    if v.value_title == "spotřeba" and ("elektřina" in device.device_name):
+                        test_dict[values_list.measurment_time.strftime("%m-%d-%Y")].append({'elektřina': v.value})
+
+                    if v.value_title == "vodoměr" and ("voda" in device.device_name):
+                        test_dict[values_list.measurment_time.strftime("%m-%d-%Y")].append({'voda': v.value})
+
+                test_dict[values_list.measurment_time] = values_dict
+
+        result_data = []
+
+        for value in test_dict:
+            if test_dict[value] is not {}:
+                if len(test_dict[value]) > 0:
+                    tmp = {'day': value}
+                    for dict in test_dict[value]:
+                        for i in dict :
+                            tmp[i]=dict[i]
 
 
+                    result_data.append(tmp)
 
-        return Response({'sdf': 'sdf'})
-
+        return Response(result_data)
 
 
     def post(self, request):
