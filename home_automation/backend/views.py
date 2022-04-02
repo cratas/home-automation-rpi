@@ -20,8 +20,9 @@ from .models import *
 #TODO (SOLVED) udelat kontrolu i u typu push
 #TODO (SOLVED) zmenit "hardcoded" hlavicky u data a casu
 #TODO (SOLVED) logiku ukladani jsem dal do model classy
-#TODO zkusit vyresit cashovani
-#TODO zacit pracovat na main frontendu
+#TODO (SOLVED) vyresit cashovani
+#TODO resit frontend cast aplikace
+#TODO (SOLVED) vyresit export
 
 #poznamky teoreticka
 #-------------------
@@ -38,7 +39,7 @@ from .models import *
 #view function returning all rooms in house
 def home(request):
     rooms = Room.objects.all()
-    return render(request, 'index.html', {'rooms':rooms})
+    return render(request, 'index.html', {'rooms':rooms , 'home_devices':Device.objects.filter(room=None)})
 
 #view function for creating new room
 def add_rooms(request):
@@ -158,42 +159,7 @@ class Export(View):
 
 
 def testing_function(request):
-    c = Cash.get_instance()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-    c.add(1)
-    c.display()
-
-
-
+    NetworkPullCommunication.process_data()
     return HttpResponse("tested")
 
 # ----------------------------------------------------------------------

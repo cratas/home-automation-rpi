@@ -38,11 +38,121 @@
     </nav>
 
 
+    <div class="col-md-12">
+        <div class="panel panel-default">
+           <div class="panel-heading">
+                <h2 class="mt-5 mb-5">Senzory spotřeby v celém domě</h2>
+           </div>
+           <div class="panel-body">
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                   <tr class="info">
+                      <th>ID</th>
+                      <th>Název</th>
+                      <th>Adresa senzoru</th>
+                      <th>Zdroj komunikace</th>
+                      <th>Formát</th>
+                      <th>Typ</th>
+                      <th>Aktivní</th>
+                      <th>Čas poslední komunikace</th>
+                      <th></th>
+                   </tr>
+                </thead>
+                <tbody>
+                    {% for device in home_devices %}
+
+                    {% if not device.has_error|lower == 'true' %}
+                        <tr data-toggle="collapse"  class="accordion-toggle" data-target="#device{{device.id}}">
+                    {% else %}
+                        <tr data-toggle="collapse"  class="accordion-toggle" style="background-color: #F29C9E;" data-target="#device{{device.id}}">
+                    {% endif %}
+
+                      <td><span style="font-weight: bold;">{{device.identifier}}<span></td>
+                      <td>{{device.device_name}}</td>
+                        {% if not device.source_address %}
+                            <td></td>
+                        {% else %}
+                            <td>{{device.source_address}}</td>
+                        {% endif %}
+
+                        {% if not device.source_type %}
+                            <td></td>
+                        {% else %}
+                            <td>{{device.source_type}}</td>
+                        {% endif %}
+
+                        {% if not device.format %}
+                            <td></td>
+                        {% else %}
+                            <td>{{device.format}}</td>
+                        {% endif %}
+                      
+                        {% if not device.source_address %}
+                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
+                            {% comment %} <td>PUSH</td> {% endcomment %}
+                        {% else %}
+                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-right-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
+                        {% endif %}
+
+                        {% if device.is_active|lower == 'true' %}
+                            <td><i class="active-device fa-solid fa-circle-check"></i></td>
+                        {% else %}
+                            <td><i class="non-active-device fa-solid fa-circle-xmark"></i></td>
+                        {% endif %}
+
+                        {% if device.get_last_communication_time %}
+                            <td><span style="font-weight: bold;">{{device.get_last_communication_time|date:"Y-m-d H:i:s" }}</span></td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+
+                        
+                        <td align="right">
+                            {% if not device.source_address %}
+                                <a href ={% url 'update-device' device.id 'push' %} class="btn btn-success btn-sm">Nastavení</a>
+                            {% else %}
+                                <a href ={% url 'update-device' device.id 'pull' %} class="btn btn-success btn-sm">Nastavení</a>
+                            {% endif %}
+                        </td>
+                            
+
+                   </tr>
+                   <tr>
+                      <td colspan="12" class="hiddenRow">
+                         <div class="accordian-body collapse" id="device{{device.id}}">
+                            <table class="table table-striped">
+                                <thead class="thead-dark">
+                                  <tr>
+                                        <th>Čas měření</th>
+                                    {% for v in device.get_values.0.get_values %}
+                                        <th>{{v.value_title}}</th>
+                                    {% endfor %}
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  {% for values_list in device.get_values %}
+                                  <tr>
+                                      <td>{{ values_list.measurment_time|date:'Y-m-d H:i:s' }}</td>
+                                    {% for value_object in values_list.get_values %}
+                                        <td>{{value_object.value}}</td>
+                                    {% endfor %}
+                                  </tr>
+                                  {% endfor %}
+                               </tbody>
+                            </table>
+                         </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+             </table>
+
+
 
     <div class="col-md-12">
         <div class="panel panel-default">
            <div class="panel-heading">
-                <h2 class="mt-5 mb-5">Přehled</h2>
+                <h2 class="mt-5 mb-5">Přehled místností se senzory</h2>
            </div>
            <div class="panel-body">
               <table class="table table-condensed table-striped">

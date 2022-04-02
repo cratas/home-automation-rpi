@@ -4,7 +4,7 @@
 # --------------
 class Cash:
     __instance = None
-    capacity = 20             #THERE IS POSSIBLE TO CHANGE CASH SIZE (SHOULD BE EVEN)
+    capacity = 4             #THERE IS POSSIBLE TO CHANGE CASH SIZE (SHOULD BE EVEN)
     queue = [None] * capacity
     tail = -1
     head = 0

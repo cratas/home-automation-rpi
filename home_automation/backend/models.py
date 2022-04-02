@@ -39,7 +39,7 @@ class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
     device_name = models.CharField(max_length=30, null=True)
     is_active = models.BooleanField(default=False)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True)
     error_count = models.IntegerField(default=0)
     has_error = models.BooleanField(default=False)
     communication_interval = models.IntegerField(default=1) #one interval unit is 1 minute
@@ -50,7 +50,10 @@ class Device(PolymorphicModel):
     datetime_format = models.CharField(max_length=30, default="%Y-%m-%d %H:%M:%S")
 
     def __str__(self):
-        return f'{self.identifier}, {self.device_name}, {self.room.name}'
+        if(self.room is None):
+             return f'{self.identifier}, {self.device_name}, celý dům'
+        else:
+            return f'{self.identifier}, {self.device_name}, {self.room.name}'
 
     def set_active(self):
         self.is_active = True
@@ -106,9 +109,8 @@ class Device(PolymorphicModel):
                 if self.datetime_title is not None:
                     if key == self.datetime_title:
                         datetime_str = value
-                        datetime_object = self.strptime(datetime_str, self.datetime_format)
+                        datetime_object = datetime.strptime(datetime_str, self.datetime_format)
                         values_list.measurment_time = datetime_object
-                        values_list.save()
                         continue
 
                 if self.date_title is not None and self.time_title is not None:
@@ -120,7 +122,6 @@ class Device(PolymorphicModel):
                         datetime_str = datetime_str + ' ' + value
                         datetime_object = datetime.strptime(datetime_str, self.datetime_format)
                         values_list.measurment_time = datetime_object
-                        values_list.save()
                         continue
 
                 #convert to correct float format
