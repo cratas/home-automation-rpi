@@ -269,7 +269,6 @@ class DeviceStatisticsView(APIView):
                 if type(d[x]) is datetime:
                     d[x] = d[x].strftime("%d.%m.")
 
-
         return Response({'data': final_list, 'headers': headers_list})
 
         
