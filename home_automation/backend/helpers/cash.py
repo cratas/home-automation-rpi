@@ -4,7 +4,7 @@
 # --------------
 class Cash:
     __instance = None
-    capacity = 4             #THERE IS POSSIBLE TO CHANGE CASH SIZE (SHOULD BE EVEN)
+    capacity = 1            #THERE IS POSSIBLE TO CHANGE CASH SIZE (SHOULD BE EVEN)
     queue = [None] * capacity
     tail = -1
     head = 0
@@ -25,9 +25,11 @@ class Cash:
     #static method for adding new object into cash
     @staticmethod
     def add(item):
-        #check if cash is not full, it should never happened
-        if Cash.size == Cash.capacity:
-            print("Queue is full!")
+        #if capacity is 1, cash is turned off
+        if Cash.capacity == 1:
+            item.device_values.save()
+            item.save()
+        #else circle buffer cashing works 
         else:
             #if capacity of cash memory is 50% occupied, save into database
             if Cash.size >= round(Cash.capacity / 2):
