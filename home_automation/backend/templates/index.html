@@ -88,10 +88,10 @@
                         {% endif %}
                       
                         {% if not device.source_address %}
-                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
-                            {% comment %} <td>PUSH</td> {% endcomment %}
+                        <td></i><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-left m-1"></td>
+                        {% comment %} <td>PUSH</td> {% endcomment %}
                         {% else %}
-                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-right-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
+                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-right-arrow-left m-1"></i></td>
                         {% endif %}
 
                         {% if device.is_active|lower == 'true' %}
@@ -221,10 +221,10 @@
                                         {% endif %}
                                       
                                         {% if not device.source_address %}
-                                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
+                                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-left m-1"></i></td>
                                             {% comment %} <td>PUSH</td> {% endcomment %}
                                         {% else %}
-                                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-right-arrow-left m-1"></i><i class="fa-solid fa-walkie-talkie"></i></td>
+                                            <td><i class="fa-solid fa-server"></i><i class="fa-solid fa-arrow-right-arrow-left m-1"></i></td>
                                         {% endif %}
 
                                         {% if device.is_active|lower == 'true' %}
