@@ -12,7 +12,6 @@ from django.db.models import Q
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
-
 class DeviceStatus(APIView):
     def post(self, request):
         #save incoming data into variables
@@ -25,7 +24,6 @@ class DeviceStatus(APIView):
         device.save()
 
         return Response({})
-
 
 # Create your views here.
 class DashboardView(APIView):
@@ -60,7 +58,6 @@ class DashboardView(APIView):
                 pass
 
         return round(sum(rooms_values) / len(rooms_values))
-
 
 class RoomsView(APIView):
     def get(self, request):
@@ -104,9 +101,7 @@ class RoomsView(APIView):
             room_dict['devices'] = devices_list
             final_list.append(room_dict)
 
-
         return Response(final_list)
-
 
 class ExportView(APIView):
     def get(self, request):
@@ -161,11 +156,7 @@ class ExportView(APIView):
 
         return Response(csv_data)
 
-
-
-
 class StatisticView(APIView):
-
     def get(self, request):
         
         test_dict = {}
@@ -200,7 +191,6 @@ class StatisticView(APIView):
 
         return Response(final_list)
 
-
     def post(self, request):
         pass
 
@@ -208,7 +198,6 @@ class TemperatureStatisticView(APIView):
     def get(self, request):
         room_name = request.GET.get('room')
         interval = int(request.GET.get('interval'))
-        
 
         room = Room.objects.filter(name=room_name)[0]
         
@@ -230,13 +219,11 @@ class TemperatureStatisticView(APIView):
                 seen.add(t)
                 final_list.append(d)
 
-
         #format date objects
         for d in final_list:
             for x in d:
                 if type(d[x]) is datetime:
                     d[x] = d[x].strftime("%d.%m.")
-
 
         return Response(final_list)
 

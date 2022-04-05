@@ -23,6 +23,7 @@
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                   <a class="dropdown-item" href="{% url 'add_device' 'pull' %}">Přidat Pull senzor</a>
                   <a class="dropdown-item" href="{% url 'add_device' 'push' %}">Přidat Push senzor</a>
+                  <a class="dropdown-item" href="{% url 'add_device' 'smart' %}">Přidat chytré zařízení</a>
                 </div>
               </li>
             <li class="nav-item mr-5">
@@ -109,7 +110,4 @@
         <input type="submit" value="Aktualizovat" class="btn btn-success my-2 my-sm-0">
       <div>
  </form>
-
-
-
 {% endblock  %}

@@ -29,11 +29,30 @@ class Room(models.Model):
 
     def any_device_has_error(self):
         return Device.objects.filter(room=self, has_error=True).count()
+
+    def get_smart_devices(self):
+        return SmartDevice.objects.filter(room=self)
+
+    def get_smart_devices_count(self):
+        return SmartDevice.objects.filter(room=self).count()
+    
 # ----------
 # DEVICE MODEL
 # ----------
 def default_set():
     return Room.objects.get(name='Kuchyně').id
+
+class SmartDevice(models.Model):
+    identifier = models.CharField(max_length=20, unique=True)
+    device_name = models.CharField(max_length=30)
+    is_active = models.BooleanField(default=False)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    class TYPES(models.TextChoices):
+        Osvlětlení = 'LIGHT'
+        Topení = 'HEATING'
+        Větrák = 'VENTILATOR'
+    type = models.CharField(max_length=20, choices=TYPES.choices, default=TYPES.choices[0])
+
 
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
@@ -81,7 +100,7 @@ class Device(PolymorphicModel):
         self.is_active=False
         self.error_count=0
         self.save()
-                #sending email to user, contact informations has to be set
+        #sending email to user, contact informations has to be set
         send_mail(
             'Device error',
             f'Communication with id: {self.identifier} failed.',
@@ -178,8 +197,6 @@ class DeviceValuesList(models.Model):
 class BaseValueObject(PolymorphicModel):
     value_title = models.CharField(max_length=30)
     device_values = models.ForeignKey(DeviceValuesList, on_delete=models.CASCADE)
-
-
 
 class StringValueObject(BaseValueObject):
     value = models.CharField(max_length=30)

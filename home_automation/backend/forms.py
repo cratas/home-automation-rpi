@@ -1,6 +1,5 @@
 from django import forms
-from .widgets import DatePickerInput, TimePickerInput
-from .models import Device, PullDevice, PushDevice, Room
+from .models import Device, PullDevice, PushDevice, Room, SmartDevice
 
 class ExportForm(forms.Form):
     from_date = forms.DateTimeField(
@@ -52,3 +51,8 @@ class PullDeviceForm(forms.ModelForm):
         model = PullDevice
         fields = ['device_name', 'identifier', 'is_active', 'room'
                 , 'source_address','source_type','format', 'delimiter', 'has_error','communication_interval', 'datetime_title', 'date_title', 'time_title','datetime_format']
+
+class SmartDeviceForm(forms.ModelForm):
+    class Meta:
+        model = SmartDevice
+        fields = ['identifier', 'device_name', 'type', 'room', 'is_active']

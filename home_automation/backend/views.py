@@ -6,7 +6,7 @@ from abc import abstractstaticmethod
 from django.views import View
 import requests
 
-from .forms import PullDeviceForm, PushDeviceForm, ExportForm, RoomForm
+from .forms import PullDeviceForm, PushDeviceForm, ExportForm, RoomForm, SmartDeviceForm
 
 from .helpers.parser import *
 from .helpers.cash import Cash
@@ -19,9 +19,8 @@ from .models import *
 #TODO (SOLVED) vyresit interval dotazovani pro kazdy senzor
 #TODO (SOLVED) udelat kontrolu i u typu push
 #TODO (SOLVED) zmenit "hardcoded" hlavicky u data a casu
-#TODO (SOLVED) logiku ukladani jsem dal do model classy
 #TODO (SOLVED) vyresit cashovani
-#TODO resit frontend cast aplikace
+#TODO (SOLVED) resit frontend cast aplikace
 #TODO (SOLVED) vyresit export
 
 #poznamky teoreticka
@@ -58,8 +57,10 @@ def add_device(request, device_type):
     #checking type of device for rendering right form
     if device_type == 'pull':
         device_form = PullDeviceForm(request.POST or None)
-    else:
+    elif device_type == 'push':
         device_form = PushDeviceForm(request.POST or None)
+    else:
+        device_form = SmartDeviceForm(request.POST or None)
 
     #if form is valid, save new device into database
     if device_form.is_valid():

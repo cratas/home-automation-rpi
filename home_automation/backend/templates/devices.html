@@ -23,6 +23,7 @@
               <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                 <a class="dropdown-item" href="{% url 'add_device' 'pull' %}">Přidat Pull senzor</a>
                 <a class="dropdown-item" href="{% url 'add_device' 'push' %}">Přidat Push senzor</a>
+                <a class="dropdown-item" href="{% url 'add_device' 'smart' %}">Přidat chytré zařízení</a>
               </div>
             </li>
             <li class="nav-item mr-5">
@@ -39,14 +40,20 @@
 
   {% if device_type|lower == 'pull' %}
     <h2 class="mt-5 mb-5">Přidat nový Pull senzor</h2>
-  {% else %}
+  {% elif device_type|lower == 'push' %}
     <h2 class="mt-5 mb-5">Přidat nový Push senzor</h2>
+  {% else %}
+    <h2 class="mt-5 mb-5">Přidat nové chytré zařízení</h2>
   {% endif %}
 
     <form action="" method="post">{% csrf_token %}
       <table class="table">
         <tr>
+          {% if device_type|lower == 'smart' %}
+            <td class="font-weight-bold">Název chytrého zařízení<span style="color: red;"> *</span></td>
+          {% else %}
             <td class="font-weight-bold">Název senzoru<span style="color: red;"> *</span></td>
+          {% endif %}
             <td style="text-align: right; ">{{ device_form.device_name }}</td>
        </tr>
         <tr>
@@ -61,29 +68,32 @@
             <td class="font-weight-bold">Místnost<span style="color: red;"> *</span></td>
             <td style="text-align: right;">{{ device_form.room }}</td>
         </tr>
+
+        {% if device_type|lower != 'smart' %}
+
         <tr>
           <td><span class="font-weight-bold">Interval komunikace</span> (v minutách)<span style="color: red;"> *</span></td>
           <td style="text-align: right;">{{ device_form.communication_interval }}</td>
-      </tr>
+        </tr>
 
-        {% if device_type|lower == 'pull' %}
-            <tr>
-                <td class="font-weight-bold">Adresa senzoru<span style="color: red;"> *</span></td>
-                <td style="text-align: right;">{{ device_form.source_address }}</td>
+          {% if device_type|lower == 'pull' %}
+              <tr>
+                  <td class="font-weight-bold">Adresa senzoru<span style="color: red;"> *</span></td>
+                  <td style="text-align: right;">{{ device_form.source_address }}</td>
+              </tr>
+              <tr>
+                  <td class="font-weight-bold">Typ komunikace<span style="color: red;"> *</span></td>
+                  <td style="text-align: right;">{{ device_form.source_type }}</td>
+              </tr>
+              <tr>
+                  <td><span class="font-weight-bold">Formát přenášených dat</span><span style="color: red;"> *</span></td>
+                  <td style="text-align: right;">{{ device_form.format }}</td>
+              </tr>
+              <tr>
+                <td><span class="font-weight-bold">Oddělovač v CSV</span> (pouze při formátu CSV)</td>
+                <td style="text-align: right;">{{ device_form.delimiter }}</td>
             </tr>
-            <tr>
-                <td class="font-weight-bold">Typ komunikace<span style="color: red;"> *</span></td>
-                <td style="text-align: right;">{{ device_form.source_type }}</td>
-            </tr>
-            <tr>
-                <td><span class="font-weight-bold">Formát přenášených dat</span><span style="color: red;"> *</span></td>
-                <td style="text-align: right;">{{ device_form.format }}</td>
-            </tr>
-            <tr>
-              <td><span class="font-weight-bold">Oddělovač v CSV</span> (pouze při formátu CSV)</td>
-              <td style="text-align: right;">{{ device_form.delimiter }}</td>
-          </tr>
-        {% endif %}
+          {% endif %}
             <tr>
               <td><span style="color: #f00; font-weight: bold">Obsahujou-li data senzoru údaj o čase, zadejte klíč hodnoty</span></td>
               <td></td>
@@ -104,6 +114,13 @@
               <td><span class="font-weight-bold">Formát</span> ("%Y-%m-%d %H:%M:%S")</td>
               <td style="text-align: right;">{{ device_form.datetime_format }}</td>
             </tr>
+        {% else %}
+          <tr>
+            <td><span class="font-weight-bold">Typ</span></td>
+            <td style="text-align: right;">{{ device_form.type }}</td>
+          </tr>
+        {% endif %}
+
         </table>
 
         <hr>
