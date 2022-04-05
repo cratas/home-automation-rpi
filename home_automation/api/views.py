@@ -1,25 +1,22 @@
-import re
-from sys import api_version
-from textwrap import dedent
-from django.shortcuts import render
-from graphviz import view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from backend.models import *
-from django.http import HttpResponse
-from django.views import View
 from django.db.models import Q
 from datetime import datetime, timedelta
-from collections import OrderedDict
 
 class DeviceStatus(APIView):
     def post(self, request):
         #save incoming data into variables
         identifier = request.data['id']
         status = request.data['state']
+        is_smart_device = request.data['isSmartDevice']
 
-        #find device by unique identifier and set new status
-        device = Device.objects.filter(identifier=identifier)[0]
+        #find device by type and unique identifier and set new status
+        if is_smart_device:
+            device = SmartDevice.objects.filter(identifier=identifier)[0]
+        else:
+            device = Device.objects.filter(identifier=identifier)[0]
+
         device.is_active = status;
         device.save()
 
@@ -67,8 +64,6 @@ class RoomsView(APIView):
             room_dict = {}
             room_dict['name'] = room.name
 
-            data_dict={}
-
             devices_list = []
             for device in Device.objects.filter(room=room):
                 device_dict = {'identifier': device.identifier, 'name' : device.device_name, 'last_time' : device.get_last_communication_time(), 'is_active' : device.is_active, 'has_error' : device.has_error }
@@ -88,17 +83,14 @@ class RoomsView(APIView):
                 except:
                     pass
 
-                # for v in device.get_values().filter(measurment_time__gte=datetime.now()-timedelta(days=7)):
-                #     try:
-                #         if not v.measurment_time.strftime("%d.%m.") in data_dict.keys():
-                #             data_dict[v.measurment_time.strftime("%d.%m.")].append({'co2': v.value})
-                #         data_dict
-                #         print(f'{v.measurment_time} -- {v.get_values().filter(value_title="co2")[0]}')
-                #     except:
-                #         pass
+            smart_devices_list = []
 
+            for smart_device in SmartDevice.objects.filter(room=room):
+                smart_device_dict = {'identifier': smart_device.identifier, 'name' : smart_device.device_name, 'is_active': smart_device.is_active, 'type' : smart_device.type }
+                smart_devices_list.append(smart_device_dict)
 
             room_dict['devices'] = devices_list
+            room_dict['smart_devices'] = smart_devices_list
             final_list.append(room_dict)
 
         return Response(final_list)
