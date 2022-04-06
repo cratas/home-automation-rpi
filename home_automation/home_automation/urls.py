@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
+#splitting urls into two branches, first is backend for communication with sensors
+#and second one is api for communication with main frontend
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('backend.urls')),

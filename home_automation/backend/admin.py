@@ -1,8 +1,7 @@
+from .models import PullDevice, PushDevice, Room, Device, DeviceValuesList, SmartDevice, StringValueObject, NumericValueObject, BooleanValueObject
 from django.contrib import admin
 
-from .models import PullDevice, PushDevice, Room, Device, DeviceValuesList, SmartDevice, StringValueObject, NumericValueObject, BooleanValueObject
-
-#register my modules
+# register my modules into admin site
 admin.site.register(Room)
 admin.site.register(Device)
 admin.site.register(PushDevice)

@@ -4,6 +4,7 @@ from backend.models import *
 from django.db.models import Q
 from datetime import datetime, timedelta
 
+# APIView class for returning status of device specified via POST request parametres
 class DeviceStatus(APIView):
     def post(self, request):
         #save incoming data into variables
@@ -22,15 +23,18 @@ class DeviceStatus(APIView):
 
         return Response({})
 
-# Create your views here.
+# APIView class for returning data into main frontend dashboard
+# data contains avg house temperature, humidity and CO2
 class DashboardView(APIView):
     def get(self, request):
+        # counting avg values for whole house
         house_temperature = self.count_avg('temperature')
         house_humidity = self.count_avg('humidity')
         house_co2 = self.count_avg('co2')
 
         rooms_info = []
 
+        # filling list of room dicts with number of devices by type
         for room in Room.objects.all():
             room = {
                 'name': room.name,
@@ -56,14 +60,17 @@ class DashboardView(APIView):
 
         return round(sum(rooms_values) / len(rooms_values))
 
+# APIView class for returning tempr, humidity, co2 and devices for every room
 class RoomsView(APIView):
     def get(self, request):
         final_list = []
 
+        # iterate over all rooms in house
         for room in Room.objects.all():
             room_dict = {}
             room_dict['name'] = room.name
 
+            # iterate over all devices in room
             devices_list = []
             for device in Device.objects.filter(room=room):
                 device_dict = {'identifier': device.identifier, 'name' : device.device_name, 'last_time' : device.get_last_communication_time(), 'is_active' : device.is_active, 'has_error' : device.has_error }
@@ -85,20 +92,25 @@ class RoomsView(APIView):
 
             smart_devices_list = []
 
+            # iterate over all smart devices like lights, fans and heating and add them into smart_devices list
             for smart_device in SmartDevice.objects.filter(room=room):
                 smart_device_dict = {'identifier': smart_device.identifier, 'name' : smart_device.device_name, 'is_active': smart_device.is_active, 'type' : smart_device.type }
                 smart_devices_list.append(smart_device_dict)
 
+            # add current device or smart device into final list
             room_dict['devices'] = devices_list
             room_dict['smart_devices'] = smart_devices_list
             final_list.append(room_dict)
 
         return Response(final_list)
 
+# APIView class for returning data to form and handling post request
 class ExportView(APIView):
+    # function executed by get request, send all devices in house via response
     def get(self, request):
         devices = []
 
+        # iterate over all devices in room
         for device in Device.objects.all():
             if device.room is not None:
                 device_dict = {'id': device.identifier , 'name': f'{device.device_name}, {device.room.name}'}
@@ -109,6 +121,7 @@ class ExportView(APIView):
 
         return Response(devices)
 
+    # function executed by post request, returning data in csv format for devices specified in parametres of request
     def post(self, request):
         from_date = request.data['from']
         to_date = request.data['until']
@@ -116,46 +129,50 @@ class ExportView(APIView):
 
         csv_data = []
 
-        #iterate over all selected devices
+        # iterate over all selected devices
         for device in devices:
-            #select values by values from form
+            # select values by values from form
             selected_device = Device.objects.get(identifier=device['value'])
             selected_values = DeviceValuesList.objects.filter(device=selected_device, measurment_time__lte=to_date, measurment_time__gte=from_date)
-            #if there is not values for device, iterator will jump to next one
+            # if there is not values for device, iterator will jump to next one
             if not selected_values:
                 continue
 
-            #creating first row of csv file with titles
+            # creating first row of csv file with titles
             value_titles = ['time']
             for titles in selected_values.first().get_values():
                 value_titles.append(titles.value_title)
 
-            #write titles into csv file
+            # write titles into csv file
             csv_data.append(selected_device.get_values_into_csv())
             csv_data.append(value_titles)
 
-            #write values into csv file
+            # write values into csv file
             for value_object in selected_values:
-                #adding formated measurment_time into row
+                # adding formated measurment_time into row
                 row = [value_object.measurment_time.strftime("%Y-%m-%d %H:%M:%S")]
-                #adding all values into row
+                # adding all values into row
                 [row.append(val.value) for val in value_object.get_values()]
-                #write row into csv file
+                # write row into csv file
                 csv_data.append(row)
 
-            #separator for better reading csv file
+            # adding separator between device values
             csv_data.append([" "])
 
         return Response(csv_data)
 
+# APIView class for returning house consumption data
 class StatisticView(APIView):
     def get(self, request):
         
         test_dict = {}
+        # iterate over all devices which are set for measuring data in whole house
         for device in Device.objects.filter(room=None):
+            # iterate over all values lists in measured last month
             for values_list in device.get_values().filter(measurment_time__gte=datetime.now()-timedelta(days=30)):
                 values_dict = {}
 
+                # iterate over all values in current values list
                 for v in values_list.get_values().filter(Q(value_title="spotřeba") | Q(value_title="vodoměr")):
                     if not values_list.measurment_time.strftime("%d.%m.") in test_dict.keys():
                         test_dict[values_list.measurment_time.strftime("%d.%m.")] = []
@@ -170,6 +187,7 @@ class StatisticView(APIView):
 
         final_list = []
 
+        # format data into format required by recharts library on frontend: [{key: val, key: val}]
         for value in test_dict:
             if test_dict[value] is not {}:
                 if len(test_dict[value]) > 0:
@@ -178,23 +196,24 @@ class StatisticView(APIView):
                         for i in dict :
                             tmp[i]=dict[i]
 
-
                     final_list.append(tmp)
 
         return Response(final_list)
 
-    def post(self, request):
-        pass
-
+# APIView class for returning temperature and humidity data for specific room in specific interval
 class TemperatureStatisticView(APIView):
     def get(self, request):
+        # getting data from parameters
         room_name = request.GET.get('room')
         interval = int(request.GET.get('interval'))
 
+        # get room object by name in request parameter
         room = Room.objects.filter(name=room_name)[0]
         
         dev_list = []
+        # iterate over all devices which measure temperature and humidity in specific room
         for d in Device.objects.filter(device_name__icontains="teplota", room=room):
+            # iterate over all values measured in specific interval ordered by time
             for value_list in d.get_values().filter(measurment_time__gte=datetime.now()-timedelta(days=interval)).order_by('measurment_time__year','measurment_time__month','measurment_time__day', 'measurment_time__minute'):
                 temperature = BaseValueObject.objects.filter(value_title="temperature").filter(device_values=value_list)
                 humidity = BaseValueObject.objects.filter(value_title="humidity").filter(device_values=value_list)
@@ -202,7 +221,7 @@ class TemperatureStatisticView(APIView):
 
                 dev_list.append(values_dict)
 
-        #remove duplicates
+        # remove duplicates
         seen = set()
         final_list = []
         for d in dev_list:
@@ -219,15 +238,17 @@ class TemperatureStatisticView(APIView):
 
         return Response(final_list)
 
-
+# APIView class for returning all measured values for specific device in specific interval
 class DeviceStatisticsView(APIView):
     def get(self, request):
+        # getting data from parameters
         device_identifier = request.GET.get('device')
         interval = int(request.GET.get('interval'))
 
         final_list = []
         headers_list = []
 
+        # getting all measured values for specific device/s in specific interval ordered by time
         for d in Device.objects.filter(identifier=device_identifier):
             for value_list in d.get_values().filter(measurment_time__gte=datetime.now()-timedelta(days=interval)).order_by('measurment_time__year','measurment_time__month','measurment_time__day', 'measurment_time__minute'):
                 values_dict = {}

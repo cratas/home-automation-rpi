@@ -18,11 +18,11 @@ class DeviceManager:
         else:
             DeviceManager.__instance = self
 
-    #get device by pk
+    # get device by pk
     def get_device(self, primary_key):
         return Device.objects.get(pk=primary_key)
 
-    #simple device getters
+    # simple device getters
     def get_devices(self):
         return PullDevice.objects.all()
 
@@ -32,11 +32,11 @@ class DeviceManager:
     def get_push_devices(self):
         return PushDevice.objects.all()
 
-    #device getters by communication source
+    #d evice getters by communication source
     def get_pull_network_devices(self):
         return PullDevice.objects.filter(source_type="network")
 
-    #device getters by status 
+    #d evice getters by status 
     def get_active_pull_network_devices(self):
         return PullDevice.objects.filter(source_type="network", is_active=True)
 

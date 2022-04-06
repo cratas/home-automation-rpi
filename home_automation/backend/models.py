@@ -1,11 +1,11 @@
-from django.db import models
 from polymorphic.models import PolymorphicModel
-from .helpers.parser import *
-from django.utils import timezone
 from django.core.mail import send_mail
-from datetime import datetime
-
+from django.utils import timezone
 from .helpers.cash import Cash
+from datetime import datetime
+from .helpers.parser import *
+from django.db import models
+
 # ----------
 # ROOM MODEL
 # ----------
@@ -53,7 +53,6 @@ class SmartDevice(models.Model):
         Větrák = 'VENTILATOR'
     type = models.CharField(max_length=20, choices=TYPES.choices, default=TYPES.choices[0])
 
-
 class Device(PolymorphicModel):
     identifier = models.CharField(max_length=20, unique=True)
     device_name = models.CharField(max_length=30, null=True)
@@ -84,10 +83,10 @@ class Device(PolymorphicModel):
         return DeviceValuesList.objects.filter(device=self).last()
 
     def get_last_communication_time(self):
-        #getting count of values for condition below
+        # getting count of values for condition below
         values_count = DeviceValuesList.objects.filter(device=self).order_by('measurment_time').count()
 
-        #if there is no data None will be returned
+        # if there is no data None will be returned
         if values_count > 0:
             return DeviceValuesList.objects.filter(device=self).order_by('measurment_time').last().measurment_time
         return None
@@ -96,11 +95,12 @@ class Device(PolymorphicModel):
         return [f'{self.identifier} {self.device_name} {self.room}']
 
     def handle_error(self):
+        # setting device status
         self.has_error=True
         self.is_active=False
         self.error_count=0
         self.save()
-        #sending email to user, contact informations has to be set
+        # sending email to user, contact informations has to be set
         send_mail(
             'Device error',
             f'Communication with id: {self.identifier} failed.',
@@ -110,21 +110,21 @@ class Device(PolymorphicModel):
         )
 
     def save_data(self, data):
-        #iterate over all dicts in dict list
+        # iterate over all dicts in dict list
         for dict_object in data:
             # values_list = DeviceValuesList.objects.create(device=self)
             values_list = DeviceValuesList(device=self)
 
-            #variable for creating datetime from two columns
+            # variable for creating datetime from two columns
             datetime_str = ""
 
-            #iterate over every dict inside list
+            # iterate over every dict inside list
             for key, value in dict_object.items():
-                #ignore values with key id
+                # ignore values with key id
                 if key == 'id':
                     continue
                 
-                #checking if mesurment time is part of data, if no, default time is set to timestamp
+                # checking if mesurment time is part of data, if no, default time is set to timestamp
                 if self.datetime_title is not None:
                     if key == self.datetime_title:
                         datetime_str = value
@@ -143,18 +143,17 @@ class Device(PolymorphicModel):
                         values_list.measurment_time = datetime_object
                         continue
 
-                #convert to correct float format
+                # convert to correct float format
                 if "," in value:
                     value = value.replace(',','.')
     
-                #creating correct type of value
+                # creating correct type of value
                 if is_number(value):
-                    # NumericValueObject.objects.create(value_title=key, value=value, device_values=values_list)
                     result = NumericValueObject(value_title=key, value=value, device_values=values_list)
                 else:
-                    # StringValueObject.objects.create(value_title=key, value=value, device_values=values_list)
                     result = StringValueObject(value_title=key, value=value, device_values=values_list)
 
+                # adding new values into cash memory
                 Cash.get_instance().add(result)
 
 class PushDevice(Device):

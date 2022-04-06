@@ -21,7 +21,6 @@ class ExportForm(forms.Form):
     device = forms.MultipleChoiceField(choices=[
     (choice.pk, choice) for choice in Device.objects.all()])
 
-
 class RoomForm(forms.ModelForm):
     class Meta:
         model = Room
