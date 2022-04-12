@@ -1,4 +1,6 @@
-
+from pickle import FALSE
+import threading
+import time
 # --------------
 # SINGLETON Class with cash memory impemented as ring buffer
 # --------------
@@ -9,6 +11,7 @@ class Cash:
     tail = -1
     head = 0
     size = 0
+    saving_thread_run = False
 
     # static method for getting instance of Cash
     @staticmethod
@@ -26,22 +29,38 @@ class Cash:
     # static method for adding new object into cash
     @staticmethod
     def add(item):
+        # if capacity is reached, print warning and return
+        if Cash.size == Cash.capacity:
+            print("Queue is full")
+            return 
+
         # if capacity is 1, cash is turned off
         if Cash.capacity == 1:
             item.device_values.save()
             item.save()
+            return None
         # else circle buffer cashing works 
         else:
-            # if capacity of cash memory is 50% occupied, save into database
-            if Cash.size >= round(Cash.capacity / 2):
-                [ Cash.remove() for _ in range(round(Cash.capacity / 2)) ]
-            
-            # dd new item into cash and move tail pointer
+            # add new item into cash and move tail pointer
             Cash.tail = (Cash.tail + 1) % Cash.capacity
             Cash.queue[Cash.tail] = item
             Cash.size = Cash.size + 1
 
-    # static method for removing objects into cash and write data into database
+            # if capacity of cash memory is 50% occupied, save into database in created thread
+            if Cash.size > round(Cash.capacity / 2) and Cash.saving_thread_run is False:
+                t = threading.Thread(target=Cash.save_cash(), daemon=True)
+                t.start()
+            
+        # Cash.display()
+
+    # static method for saving all objects from cash memory
+    @staticmethod
+    def save_cash():
+        Cash.saving_thread_run = True
+        [ Cash.remove() for _ in range(Cash.size) ]
+        Cash.saving_thread_run = False
+
+    # static method for removing object from cash and write data into database
     @staticmethod
     def remove():
         if Cash.size == 0:

@@ -153,7 +153,9 @@ class Export(View):
 
 
 def testing_function(request):
-    NetworkPullCommunication.process_data()
+    
+    Cash.get_instance().add('cislo')
+
     return HttpResponse("tested")
 
 # ----------------------------------------------------------------------
