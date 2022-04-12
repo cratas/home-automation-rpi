@@ -29,11 +29,6 @@ class Cash:
     # static method for adding new object into cash
     @staticmethod
     def add(item):
-        # if capacity is reached, print warning and return
-        if Cash.size == Cash.capacity:
-            print("Queue is full")
-            return 
-
         # if capacity is 1, cash is turned off
         if Cash.capacity == 1:
             item.device_values.save()
@@ -41,15 +36,20 @@ class Cash:
             return None
         # else circle buffer cashing works 
         else:
-            # add new item into cash and move tail pointer
-            Cash.tail = (Cash.tail + 1) % Cash.capacity
-            Cash.queue[Cash.tail] = item
-            Cash.size = Cash.size + 1
+            # if capacity is reached, print warning and return
+            if Cash.size == Cash.capacity:
+                print("Queue is full")
+                return 
+            else:
+                # add new item into cash and move tail pointer
+                Cash.tail = (Cash.tail + 1) % Cash.capacity
+                Cash.queue[Cash.tail] = item
+                Cash.size = Cash.size + 1
 
-            # if capacity of cash memory is 50% occupied, save into database in created thread
-            if Cash.size > round(Cash.capacity / 2) and Cash.saving_thread_run is False:
-                t = threading.Thread(target=Cash.save_cash(), daemon=True)
-                t.start()
+                # if capacity of cash memory is 50% occupied, save into database in created thread
+                if Cash.size > round(Cash.capacity / 2) and Cash.saving_thread_run is False:
+                    t = threading.Thread(target=Cash.save_cash(), daemon=True)
+                    t.start()
             
         # Cash.display()
 
