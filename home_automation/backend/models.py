@@ -1,7 +1,7 @@
 from polymorphic.models import PolymorphicModel
 from django.core.mail import send_mail
 from django.utils import timezone
-from .helpers.cash import Cash
+from .helpers.cache import Cache
 from datetime import datetime
 from .helpers.parser import *
 from django.db import models
@@ -154,7 +154,7 @@ class Device(PolymorphicModel):
                     result = StringValueObject(value_title=key, value=value, device_values=values_list)
 
                 # adding new values into cash memory
-                Cash.get_instance().add(result)
+                Cache.get_instance().add(result)
 
 class PushDevice(Device):
     pass

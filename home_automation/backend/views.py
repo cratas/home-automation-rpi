@@ -4,29 +4,10 @@ from django.shortcuts import redirect, render
 from .helpers.managers import DeviceManager
 from django.http import HttpResponse
 from abc import abstractstaticmethod
-from .helpers.cash import Cash
 from django.views import View
 from .helpers.parser import *
 from .models import *
 import requests
-
-#TODO (SOLVED) zmenit ikonku push/pull 
-#TODO (SOLVED) zobrazovat posledni aktualizaci senzoru
-#TODO (SOLVED) export vsech dat, ci po senzorech
-#TODO (SOLVED) vyresit interval dotazovani pro kazdy senzor
-#TODO (SOLVED) udelat kontrolu i u typu push
-#TODO (SOLVED) zmenit "hardcoded" hlavicky u data a casu
-#TODO (SOLVED) vyresit cashovani
-#TODO (SOLVED) resit frontend cast aplikace
-#TODO (SOLVED) vyresit export
-
-# poznamky teoreticka
-# -------------------
-# komunikace se senzory, pull-crontab, push-views, popsat vsechny problemy okolo
-# navrh struktury tabulek, vse okolo orm v djangu atd
-# popsat oop kod, navrhove vzory, oduvodnit
-# neco k server-side frontendu
-
 
 # view function returning all rooms in house
 def home(request):
@@ -153,8 +134,6 @@ class Export(View):
 
 
 def testing_function(request):
-    
-    Cash.get_instance().add('cislo')
 
     return HttpResponse("tested")
 
