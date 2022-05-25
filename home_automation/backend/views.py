@@ -135,6 +135,8 @@ class Export(View):
 
 def testing_function(request):
 
+    NetworkPullCommunication.process_data()
+
     return HttpResponse("tested")
 
 # ----------------------------------------------------------------------
