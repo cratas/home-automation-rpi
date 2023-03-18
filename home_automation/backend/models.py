@@ -81,6 +81,19 @@ class Device(PolymorphicModel):
 
     def get_last_value(self):
         return DeviceValuesList.objects.filter(device=self).last()
+    
+    @staticmethod
+    def count_avg(self, value_type):
+        rooms_values = []
+
+        for device in Device.objects.all():
+            try:
+                for v in device.get_last_value().get_values().filter(value_title=value_type):
+                    rooms_values.append(v.value)
+            except:
+                pass
+
+        return round(sum(rooms_values) / len(rooms_values))
 
     def get_last_communication_time(self):
         # getting count of values for condition below
