@@ -171,6 +171,10 @@ class PullDevice(Device):
         PARAMETRES = 'parametres'
     format = models.CharField(max_length=20, choices=FORMATS.choices, default=FORMATS.choices[0])
     delimiter = models.CharField(max_length=1, default=',')
+    
+    
+    def save_data(self, data):
+        print("random output")
 
 # ----------    
 # DEVICE VALUES LIST MODEL
