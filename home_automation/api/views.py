@@ -27,10 +27,11 @@ class DeviceStatus(APIView):
 # data contains avg house temperature, humidity and CO2
 class DashboardView(APIView):
     def get(self, request):
+
         # counting avg values for whole house
-        house_temperature = self.count_avg('temperature')
-        house_humidity = self.count_avg('humidity')
-        house_co2 = self.count_avg('co2')
+        house_temperature = Device.count_avg('temperature')
+        house_humidity = Device.count_avg('humidity')
+        house_co2 = Device.count_avg('co2')
 
         rooms_info = []
 
@@ -46,19 +47,6 @@ class DashboardView(APIView):
 
         return Response({'house_temperature': house_temperature, 'house_humidity': house_humidity, 'house_co2': house_co2, 'rooms': rooms_info})
 
-    # function to count specific value for whole house (all rooms avg)
-    def count_avg(self, value_type):
-        rooms_values = []
-
-        # there should be iteration over active devices only
-        for device in Device.objects.all():
-            try:
-                for v in device.get_last_value().get_values().filter(value_title=value_type):
-                    rooms_values.append(v.value)
-            except:
-                pass
-
-        return round(sum(rooms_values) / len(rooms_values))
 
 # APIView class for returning tempr, humidity, co2 and devices for every room
 class RoomsView(APIView):
